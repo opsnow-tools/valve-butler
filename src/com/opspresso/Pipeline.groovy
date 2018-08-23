@@ -2,9 +2,9 @@
 package com.opspresso;
 
 def helmInit() {
-    println "$ helm init"
+    println "+ helm init"
     sh "helm init"
 
-    println "helm version"
+    println "+ helm version"
     sh "helm version"
 }

@@ -1,12 +1,12 @@
 #!/usr/bin/groovy
-package com.opspresso;
+package com.opsnow;
 
 def init() {
-    println "+ helm version"
-    sh "helm version"
-
     println "+ helm init"
     sh "helm init"
+
+    println "+ helm version"
+    sh "helm version"
 
     println "+ helm repo list"
     sh "helm repo list"

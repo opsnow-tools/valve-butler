@@ -3,8 +3,10 @@
 ```groovy
 // Requires [Pipeline: GitHub Groovy Libraries]
 // https://plugins.jenkins.io/pipeline-github-lib
-@Library('github.com/opspresso/jenkins-pipeline@master')
-def helm = new com.opsnow.pipeline.Helm()
+@Library('github.com/opsnow/pipeline@master')
+def pipeline = new com.opsnow.Pipeline()
 
-helm.init()
+pipeline.scan()
 ```
+
+* <https://jenkins.io/doc/pipeline/steps/workflow-basic-steps/>

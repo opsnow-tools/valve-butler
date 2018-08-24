@@ -22,7 +22,8 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     // domains
     this.jenkins = scan_domain("jenkins", namespace, base_domain)
     if (this.jenkins) {
-        this.base_domain = this.jenkins.substring(this.jenkins.indexOf('.'))
+        this.base_domain = this.jenkins.substring(this.jenkins.indexOf('.') + 1)
+        echo "# base_domain: $base_domain"
     }
 
     this.chartmuseum = scan_domain("chartmuseum", namespace, base_domain)

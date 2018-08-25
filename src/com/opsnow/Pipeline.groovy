@@ -162,8 +162,8 @@ def helm_delete(name = "", namespace = "", cluster = "") {
 
     sh """
         helm search $name
-        helm history $name-$namespace
-        helm delete --purge $name-$namespace --max 5
+        helm history $name-$namespace --max 5
+        helm delete --purge $name-$namespace
     """
 }
 

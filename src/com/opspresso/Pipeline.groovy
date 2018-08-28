@@ -41,12 +41,19 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     }
 }
 
-def scan_langusge(target = "", language = "") {
+def scan_langusge(target = "", source_lang = "") {
     def target_path = sh(script: "find . -name $target | head -1", returnStdout: true).trim()
 
     if (target_path) {
-        this.source_lang = language
-        this.source_root = sh(script: "dirname $target_path", returnStdout: true).trim()
+        source_root = sh(script: "dirname $target_path", returnStdout: true).trim()
+
+        if (source_root) {
+            this.source_lang = source_lang
+            this.source_root = source_root
+
+            echo "# source_lang: $source_lang"
+            echo "# source_root: $source_root"
+        }
     }
 }
 

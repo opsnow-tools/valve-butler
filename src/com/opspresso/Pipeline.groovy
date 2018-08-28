@@ -53,6 +53,11 @@ def scan_langusge(target = "", source_lang = "") {
 
             echo "# source_lang: $source_lang"
             echo "# source_root: $source_root"
+
+            // maven mirror
+            if (source_lang == 'java') {
+
+            }
         }
     }
 }

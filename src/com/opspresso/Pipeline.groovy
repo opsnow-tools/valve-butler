@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-package com.opsnow;
+package com.opspresso;
 
 def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     this.name = name

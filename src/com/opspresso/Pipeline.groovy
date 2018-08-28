@@ -4,7 +4,6 @@ package com.opspresso;
 def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     this.name = name
     this.branch = branch
-    this.version = "v0.0.0"
     this.namespace = namespace
     this.cluster = ""
     this.source_lang = ""
@@ -15,8 +14,11 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     if (branch == "master") {
         date = new Date().format('yyyyMMdd-HHmm')
         version = "0.1.1-$date"
+    } else {
+        version = "v0.0.0"
     }
 
+    this.version = version
     echo "# version: $version"
 
     // domains
@@ -29,10 +31,23 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     this.registry = scan_domain("docker-registry", namespace, base_domain)
     this.sonarqube = scan_domain("sonarqube", namespace, base_domain)
     this.nexus = scan_domain("sonatype-nexus", namespace, base_domain)
+
+    // language
+    if (!this.source_lang?.trim()) {
+        scan_langusge("package.json", "nodejs")
+    }
+    if (!this.source_lang?.trim()) {
+        scan_langusge("pom.xml", "java")
+    }
 }
 
-def scan_langusge(target = "") {
+def scan_langusge(target = "", language = "") {
+    def target_path = sh(script: "find . -name $target | head -1", returnStdout: true).trim()
 
+    if (target_path) {
+        this.source_lang = language
+        this.source_root = sh(script: "dirname $target_path", returnStdout: true).trim()
+    }
 }
 
 def scan_domain(target = "", namespace = "", base_domain = "") {
@@ -90,12 +105,12 @@ def build_chart(name = "", version = "", registry = "", base_domain = "") {
 
         sh "sed -i -e \"s|tag: .*|tag: $version|\" values.yaml"
 
-        if (base_domain) {
-            sh "sed -i -e \"s|basedomain: .*|basedomain: $base_domain|\" values.yaml"
-        }
-
         if (registry) {
             sh "sed -i -e \"s|repository: .*|repository: $registry/$name|\" values.yaml"
+        }
+
+        if (base_domain) {
+            sh "sed -i -e \"s|basedomain: .*|basedomain: $base_domain|\" values.yaml"
         }
 
         sh "helm lint ."

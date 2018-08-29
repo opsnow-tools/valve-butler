@@ -246,12 +246,12 @@ def draft_up(name = "", namespace = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
-    helm_init()
-
     draft_init()
 
     sh "sed -i -e \"s/NAMESPACE/$namespace/g\" draft.toml"
     sh "sed -i -e \"s/NAME/$name-$namespace/g\" draft.toml"
 
     sh "draft up -e $namespace"
+
+    sh "draft logs"
 }

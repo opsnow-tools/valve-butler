@@ -22,16 +22,15 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     echo "# version: $version"
 
     // domains
-    this.jenkins = scan_domain("jenkins", namespace, base_domain)
+    this.jenkins = scan_domain("jenkins", namespace)
     if (this.jenkins) {
-        base_domain = this.jenkins.substring(this.jenkins.indexOf('.') + 1)
-        this.base_domain = "$base_domain"
+        this.base_domain = this.jenkins.substring(this.jenkins.indexOf('.') + 1)
     }
 
-    this.chartmuseum = scan_domain("chartmuseum", namespace, base_domain)
-    this.registry = scan_domain("docker-registry", namespace, base_domain)
-    this.sonarqube = scan_domain("sonarqube", namespace, base_domain)
-    this.nexus = scan_domain("sonatype-nexus", namespace, base_domain)
+    this.chartmuseum = scan_domain("chartmuseum", namespace)
+    this.registry = scan_domain("docker-registry", namespace)
+    this.sonarqube = scan_domain("sonarqube", namespace)
+    this.nexus = scan_domain("sonatype-nexus", namespace)
 
     // language
     if (!this.source_lang?.trim()) {
@@ -46,7 +45,7 @@ def scan_langusge(target = "", source_lang = "") {
     def target_path = sh(script: "find . -name $target | head -1", returnStdout: true).trim()
 
     if (target_path) {
-        source_root = sh(script: "dirname $target_path", returnStdout: true).trim()
+        def source_root = sh(script: "dirname $target_path", returnStdout: true).trim()
 
         if (source_root) {
             this.source_lang = source_lang
@@ -71,7 +70,7 @@ def scan_langusge(target = "", source_lang = "") {
     }
 }
 
-def scan_domain(target = "", namespace = "", base_domain = "") {
+def scan_domain(target = "", namespace = "") {
     if (!target?.trim()) {
         throw new RuntimeException("target is null.")
     }
@@ -81,8 +80,8 @@ def scan_domain(target = "", namespace = "", base_domain = "") {
 
     def domain = sh(script: "kubectl get ing -n $namespace -o wide | grep $target | awk '{print \$2}'", returnStdout: true).trim()
 
-    if (domain && base_domain) {
-        domain = "$target-$namespace.$base_domain"
+    if (domain && this.base_domain) {
+        domain = "$target-$namespace.$this.base_domain"
     }
 
     echo "# $target: $domain"

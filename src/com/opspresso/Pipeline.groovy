@@ -121,6 +121,8 @@ def build_chart(name = "", version = "", registry = "", base_domain = "") {
         throw new RuntimeException("registry is null.")
     }
 
+    helm_init()
+
     sh "mv charts/acme charts/$name"
 
     dir("charts/$name") {

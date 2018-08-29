@@ -106,8 +106,7 @@ def make_chart(name = "", version = "") {
     }
 
     def chart = sh(script: "find . -name Chart.yaml | head -1", returnStdout: true).trim()
-
-    if (chart == "charts/acme/Chart.yaml") {
+    if (chart) {
         sh "mv charts/acme charts/$name"
 
         dir("charts/$name") {
@@ -137,11 +136,14 @@ def build_chart(name = "", version = "") {
 
     helm_init()
 
-    dir("charts/$name") {
-        sh "helm lint ."
+    def chart = sh(script: "find . -name Chart.yaml | head -1", returnStdout: true).trim()
+    if (chart) {
+        dir("charts/$name") {
+            sh "helm lint ."
 
-        if (chartmuseum) {
-            sh "helm push . chartmuseum"
+            if (chartmuseum) {
+                sh "helm push . chartmuseum"
+            }
         }
     }
 

@@ -56,7 +56,7 @@ def scan_langusge(target = "", source_lang = "") {
 
             // maven mirror
             if (source_lang == 'java') {
-                def home = System.getProperty("user.home")
+                def home = "/home/jenkins" // System.getProperty("user.home")
                 def file = new File(".m2/settings.xml")
                 def dest = new File("$home/.m2/settings.xml")
                 if (file.exists()) {

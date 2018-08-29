@@ -59,6 +59,7 @@ def scan_langusge(target = "", source_lang = "") {
                 if (this.nexus) {
                     def home = "/home/jenkins"
 
+                    sh "mkdir -p $home/.m2"
                     sh "cp -f /root/.m2/settings.xml $home/.m2/settings.xml | true"
 
                     def public_url = "http://${this.nexus}/repository/maven-public/"

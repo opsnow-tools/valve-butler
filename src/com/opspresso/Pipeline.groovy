@@ -58,12 +58,15 @@ def scan_langusge(target = "", source_lang = "") {
             if (source_lang == 'java') {
                 if (this.nexus) {
                     def home = "/home/jenkins"
+
+                    sh "cp -f /root/.m2/settings.xml $home/.m2/settings.xml | true"
+
                     def public_url = "http://${this.nexus}/repository/maven-public/"
                     def mirror_xml = "<mirror><id>mirror</id><url>${public_url}</url><mirrorOf>*</mirrorOf></mirror>"
 
                     echo "# maven-public: $public_url"
 
-                    sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $home/.m2/settings.xml"
+                    sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $home/.m2/settings.xml | true"
                 }
             }
         }

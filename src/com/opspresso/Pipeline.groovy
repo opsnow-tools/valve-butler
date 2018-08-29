@@ -56,7 +56,22 @@ def scan_langusge(target = "", source_lang = "") {
 
             // maven mirror
             if (source_lang == 'java') {
-
+                def home = System.getProperty("user.home")
+                def file = new File(".m2/settings.xml")
+                def dest = new File("$home/.m2/settings.xml")
+                if (file.exists()) {
+                    Files.copy(file, dest)
+                } else {
+                    def file = new File("/root/.m2/settings.xml")
+                    if (file.exists()) {
+                        Files.copy(file, dest)
+                    }
+                }
+                if (dest.exists() && this.nexus) {
+                    def public_url = "http://${this.nexus}/repository/maven-public/"
+                    def mirror_xml = "<mirror><id>mirror</id><url>${public_url}</url><mirrorOf>*</mirrorOf></mirror>"
+                    sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $home/.m2/settings.xml"
+                }
             }
         }
     }

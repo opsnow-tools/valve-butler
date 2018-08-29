@@ -34,10 +34,10 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
 
     // language
     if (!this.source_lang?.trim()) {
-        scan_langusge("package.json", "nodejs")
+        scan_langusge("pom.xml", "java")
     }
     if (!this.source_lang?.trim()) {
-        scan_langusge("pom.xml", "java")
+        scan_langusge("package.json", "nodejs")
     }
 }
 
@@ -56,20 +56,8 @@ def scan_langusge(target = "", source_lang = "") {
 
             // maven mirror
             if (source_lang == 'java') {
-                def home = "/home/jenkins" // System.getProperty("user.home")
-                def file = new File(".m2/settings.xml")
-                def dest = new File("$home/.m2/settings.xml")
-                if (file.exists()) {
-                    echo "+ cp .m2/settings.xml $home/.m2/settings.xml"
-                    Files.copy(file, dest)
-                } else {
-                    file = new File("/root/.m2/settings.xml")
-                    if (file.exists()) {
-                        echo "+ cp /root/.m2/settings.xml $home/.m2/settings.xml"
-                        Files.copy(file, dest)
-                    }
-                }
-                if (dest.exists() && this.nexus) {
+                if (this.nexus) {
+                    def home = "/home/jenkins"
                     def public_url = "http://${this.nexus}/repository/maven-public/"
                     def mirror_xml = "<mirror><id>mirror</id><url>${public_url}</url><mirrorOf>*</mirrorOf></mirror>"
 

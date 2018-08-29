@@ -9,6 +9,7 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     this.source_lang = ""
     this.source_root = ""
     this.base_domain = base_domain
+    this.helm_state = ""
 
     // version
     if (branch == "master") {
@@ -104,20 +105,24 @@ def make_chart(name = "", version = "") {
         throw new RuntimeException("version is null.")
     }
 
-    sh "mv charts/acme charts/$name"
+    def chart = sh(script: "find . -name Chart.yaml | head -1", returnStdout: true).trim()
 
-    dir("charts/$name") {
-        sh "sed -i -e \"s/name: .*/name: $name/\" Chart.yaml"
-        sh "sed -i -e \"s/version: .*/version: $version/\" Chart.yaml"
+    if (chart == "charts/acme/Chart.yaml") {
+        sh "mv charts/acme charts/$name"
 
-        sh "sed -i -e \"s|tag: .*|tag: $version|\" values.yaml"
+        dir("charts/$name") {
+            sh "sed -i -e \"s/name: .*/name: $name/\" Chart.yaml"
+            sh "sed -i -e \"s/version: .*/version: $version/\" Chart.yaml"
 
-        if (registry) {
-            sh "sed -i -e \"s|repository: .*|repository: $registry/$name|\" values.yaml"
-        }
+            sh "sed -i -e \"s|tag: .*|tag: $version|\" values.yaml"
 
-        if (base_domain) {
-            sh "sed -i -e \"s|basedomain: .*|basedomain: $base_domain|\" values.yaml"
+            if (registry) {
+                sh "sed -i -e \"s|repository: .*|repository: $registry/$name|\" values.yaml"
+            }
+
+            if (base_domain) {
+                sh "sed -i -e \"s|basedomain: .*|basedomain: $base_domain|\" values.yaml"
+            }
         }
     }
 }
@@ -159,6 +164,10 @@ def build_image(name = "", version = "") {
 }
 
 def helm_init() {
+    if (this.helm_state) {
+        return
+    }
+
     sh "helm init"
     sh "helm version"
 
@@ -175,6 +184,8 @@ def helm_init() {
     }
 
     sh "helm plugin list"
+
+    this.helm_state = "initialized"
 }
 
 def helm_install(name = "", version = "", namespace = "", cluster = "") {

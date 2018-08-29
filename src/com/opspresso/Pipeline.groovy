@@ -62,7 +62,7 @@ def scan_langusge(target = "", source_lang = "") {
                 if (file.exists()) {
                     Files.copy(file, dest)
                 } else {
-                    def file = new File("/root/.m2/settings.xml")
+                    file = new File("/root/.m2/settings.xml")
                     if (file.exists()) {
                         Files.copy(file, dest)
                     }

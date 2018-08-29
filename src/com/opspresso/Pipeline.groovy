@@ -180,7 +180,7 @@ def helm_install(name = "", version = "", namespace = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
-    helm_init()
+    // helm_init()
 
     sh """
         helm upgrade --install $name-$namespace chartmuseum/$name \

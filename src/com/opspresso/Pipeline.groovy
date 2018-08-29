@@ -39,6 +39,9 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     if (!this.source_lang?.trim()) {
         scan_langusge("package.json", "nodejs")
     }
+
+    // chart
+    make_chart(name, version)
 }
 
 def scan_langusge(target = "", source_lang = "") {
@@ -93,35 +96,13 @@ def scan_domain(target = "", namespace = "") {
     return domain
 }
 
-def build_image(name = "", version = "", registry = "") {
+def make_chart(name = "", version = "") {
     if (!name?.trim()) {
         throw new RuntimeException("name is null.")
     }
     if (!version?.trim()) {
         throw new RuntimeException("version is null.")
     }
-    if (!registry?.trim()) {
-        throw new RuntimeException("registry is null.")
-    }
-
-    sh """
-        docker build -t $registry/$name:$version .
-        docker push $registry/$name:$version
-    """
-}
-
-def build_chart(name = "", version = "", registry = "", base_domain = "") {
-    if (!name?.trim()) {
-        throw new RuntimeException("name is null.")
-    }
-    if (!version?.trim()) {
-        throw new RuntimeException("version is null.")
-    }
-    if (!registry?.trim()) {
-        throw new RuntimeException("registry is null.")
-    }
-
-    helm_init()
 
     sh "mv charts/acme charts/$name"
 
@@ -138,7 +119,20 @@ def build_chart(name = "", version = "", registry = "", base_domain = "") {
         if (base_domain) {
             sh "sed -i -e \"s|basedomain: .*|basedomain: $base_domain|\" values.yaml"
         }
+    }
+}
 
+def build_chart(name = "", version = "") {
+    if (!name?.trim()) {
+        throw new RuntimeException("name is null.")
+    }
+    if (!version?.trim()) {
+        throw new RuntimeException("version is null.")
+    }
+
+    helm_init()
+
+    dir("charts/$name") {
         sh "helm lint ."
 
         if (chartmuseum) {
@@ -148,6 +142,20 @@ def build_chart(name = "", version = "", registry = "", base_domain = "") {
 
     sh "helm repo update"
     sh "helm search $name"
+}
+
+def build_image(name = "", version = "") {
+    if (!name?.trim()) {
+        throw new RuntimeException("name is null.")
+    }
+    if (!version?.trim()) {
+        throw new RuntimeException("version is null.")
+    }
+
+    sh """
+        docker build -t $registry/$name:$version .
+        docker push $registry/$name:$version
+    """
 }
 
 def helm_init() {
@@ -161,7 +169,7 @@ def helm_init() {
     sh "helm repo list"
     sh "helm repo update"
 
-    helm_push = sh(script: "helm plugin list | grep 'Push chart package' | wc -l", returnStdout: true).trim()
+    def helm_push = sh(script: "helm plugin list | grep 'Push chart package' | wc -l", returnStdout: true).trim()
     if (helm_push == '0') {
         sh "helm plugin install https://github.com/chartmuseum/helm-push"
     }

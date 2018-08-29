@@ -81,7 +81,7 @@ def scan_domain(target = "", namespace = "") {
     def domain = sh(script: "kubectl get ing -n $namespace -o wide | grep $target | awk '{print \$2}'", returnStdout: true).trim()
 
     if (domain && this.base_domain) {
-        domain = "$target-$namespace.$this.base_domain"
+        domain = "$target-$namespace.${this.base_domain}"
     }
 
     echo "# $target: $domain"

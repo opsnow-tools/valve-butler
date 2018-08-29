@@ -60,16 +60,21 @@ def scan_langusge(target = "", source_lang = "") {
                 def file = new File(".m2/settings.xml")
                 def dest = new File("$home/.m2/settings.xml")
                 if (file.exists()) {
+                    echo "+ cp .m2/settings.xml $home/.m2/settings.xml"
                     Files.copy(file, dest)
                 } else {
                     file = new File("/root/.m2/settings.xml")
                     if (file.exists()) {
+                        echo "+ cp /root/.m2/settings.xml $home/.m2/settings.xml"
                         Files.copy(file, dest)
                     }
                 }
                 if (dest.exists() && this.nexus) {
                     def public_url = "http://${this.nexus}/repository/maven-public/"
                     def mirror_xml = "<mirror><id>mirror</id><url>${public_url}</url><mirrorOf>*</mirrorOf></mirror>"
+
+                    echo "# maven-public: $public_url"
+
                     sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $home/.m2/settings.xml"
                 }
             }

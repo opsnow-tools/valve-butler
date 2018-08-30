@@ -9,6 +9,7 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     this.source_lang = ""
     this.source_root = ""
     this.base_domain = base_domain
+    this.slack_token = ""
     this.helm_state = ""
 
     // version
@@ -40,6 +41,9 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     if (!this.source_lang?.trim()) {
         scan_langusge("package.json", "nodejs")
     }
+
+    // slack token
+    scan_slack_token()
 
     // chart
     make_chart(name, version)
@@ -95,6 +99,14 @@ def scan_domain(target = "", namespace = "") {
     echo "# $target: $domain"
 
     return domain
+}
+
+def scan_slack_token() {
+    def token = sh(script: "kubectl get secret slack-token -n devops -o json | jq -r .data.text | base64 -d", returnStdout: true).trim()
+
+    if (token) {
+        this.slack_token = token
+    }
 }
 
 def make_chart(name = "", version = "") {

@@ -35,10 +35,10 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     this.nexus = scan_domain("sonatype-nexus", namespace)
 
     // language
-    if (!this.source_lang?.trim()) {
+    if (!this.source_lang) {
         scan_langusge("pom.xml", "java")
     }
-    if (!this.source_lang?.trim()) {
+    if (!this.source_lang) {
         scan_langusge("package.json", "nodejs")
     }
 
@@ -83,10 +83,10 @@ def scan_langusge(target = "", source_lang = "") {
 }
 
 def scan_domain(target = "", namespace = "") {
-    if (!target?.trim()) {
+    if (!target) {
         throw new RuntimeException("target is null.")
     }
-    if (!namespace?.trim()) {
+    if (!namespace) {
         throw new RuntimeException("namespace is null.")
     }
 
@@ -111,7 +111,7 @@ def scan_slack_token(namespace = "devops") {
 }
 
 def env_cluster(name = "", namespace = "devops") {
-    if (!name?.trim()) {
+    if (!name) {
         throw new RuntimeException("name is null.")
     }
 
@@ -122,10 +122,10 @@ def env_cluster(name = "", namespace = "devops") {
 }
 
 def make_chart(name = "", version = "") {
-    if (!name?.trim()) {
+    if (!name) {
         throw new RuntimeException("name is null.")
     }
-    if (!version?.trim()) {
+    if (!version) {
         throw new RuntimeException("version is null.")
     }
 
@@ -151,10 +151,10 @@ def make_chart(name = "", version = "") {
 }
 
 def build_chart(name = "", version = "") {
-    if (!name?.trim()) {
+    if (!name) {
         throw new RuntimeException("name is null.")
     }
-    if (!version?.trim()) {
+    if (!version) {
         throw new RuntimeException("version is null.")
     }
 
@@ -176,10 +176,10 @@ def build_chart(name = "", version = "") {
 }
 
 def build_image(name = "", version = "") {
-    if (!name?.trim()) {
+    if (!name) {
         throw new RuntimeException("name is null.")
     }
-    if (!version?.trim()) {
+    if (!version) {
         throw new RuntimeException("version is null.")
     }
 
@@ -214,19 +214,22 @@ def helm_init() {
     this.helm_state = "initialized"
 }
 
-def helm_install(name = "", version = "", namespace = "", cluster = "") {
-    if (!name?.trim()) {
+def helm_install(name = "", version = "", namespace = "", cluster = "", base_domain = "") {
+    if (!name) {
         throw new RuntimeException("name is null.")
     }
-    if (!version?.trim()) {
+    if (!version) {
         throw new RuntimeException("version is null.")
     }
-    if (!namespace?.trim()) {
+    if (!namespace) {
         throw new RuntimeException("namespace is null.")
     }
 
     if (cluster) {
         env_cluster(cluster)
+    }
+    if (!base_domain) {
+        base_domain = this.base_domain
     }
 
     helm_init()
@@ -234,17 +237,18 @@ def helm_install(name = "", version = "", namespace = "", cluster = "") {
     sh """
         helm upgrade --install $name-$namespace chartmuseum/$name \
                     --version $version --namespace $namespace --devel \
-                    --set fullnameOverride=$name-$namespace
+                    --set fullnameOverride=$name-$namespace \
+                    --set ingress.basedomain=$base_domain
 
         helm history $name-$namespace --max 5
     """
 }
 
 def helm_delete(name = "", namespace = "", cluster = "") {
-    if (!name?.trim()) {
+    if (!name) {
         throw new RuntimeException("name is null.")
     }
-    if (!namespace?.trim()) {
+    if (!namespace) {
         throw new RuntimeException("namespace is null.")
     }
 
@@ -271,10 +275,10 @@ def draft_init() {
 }
 
 def draft_up(name = "", namespace = "", cluster = "") {
-    if (!name?.trim()) {
+    if (!name) {
         throw new RuntimeException("name is null.")
     }
-    if (!namespace?.trim()) {
+    if (!namespace) {
         throw new RuntimeException("namespace is null.")
     }
 

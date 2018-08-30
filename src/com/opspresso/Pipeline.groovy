@@ -105,6 +105,7 @@ def scan_slack_token() {
     def token = sh(script: "kubectl get secret slack-token -n devops -o json | jq -r .data.text | base64 -d", returnStdout: true).trim()
 
     if (token) {
+        echo "# slack-token: $token"
         this.slack_token = token
     }
 }

@@ -9,6 +9,7 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     this.source_lang = ""
     this.source_root = ""
     this.base_domain = base_domain
+    this.slack_token = ""
     this.helm_state = ""
 
     // version
@@ -40,6 +41,9 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     if (!this.source_lang?.trim()) {
         scan_langusge("package.json", "nodejs")
     }
+
+    // slack token
+    scan_slack_token()
 
     // chart
     make_chart(name, version)
@@ -95,6 +99,26 @@ def scan_domain(target = "", namespace = "") {
     echo "# $target: $domain"
 
     return domain
+}
+
+def scan_slack_token(namespace = "devops") {
+    def token = sh(script: "kubectl get secret slack-token -n $namespace -o json | jq -r .data.text | base64 -d", returnStdout: true).trim()
+
+    if (token) {
+        echo "# slack-token: $token"
+        this.slack_token = token
+    }
+}
+
+def env_cluster(name = "", namespace = "devops") {
+    if (!name?.trim()) {
+        throw new RuntimeException("name is null.")
+    }
+
+    sh "mkdir -p $home/.kube"
+    sh "kubectl get secret kube-config-$name -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
+
+    sh "kubectl cluster-info"
 }
 
 def make_chart(name = "", version = "") {
@@ -201,6 +225,10 @@ def helm_install(name = "", version = "", namespace = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
+    if (cluster) {
+        env_cluster(cluster)
+    }
+
     helm_init()
 
     sh """
@@ -218,6 +246,10 @@ def helm_delete(name = "", namespace = "", cluster = "") {
     }
     if (!namespace?.trim()) {
         throw new RuntimeException("namespace is null.")
+    }
+
+    if (cluster) {
+        env_cluster(cluster)
     }
 
     helm_init()
@@ -244,6 +276,10 @@ def draft_up(name = "", namespace = "", cluster = "") {
     }
     if (!namespace?.trim()) {
         throw new RuntimeException("namespace is null.")
+    }
+
+    if (cluster) {
+        env_cluster(cluster)
     }
 
     draft_init()

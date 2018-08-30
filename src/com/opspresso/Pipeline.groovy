@@ -101,13 +101,22 @@ def scan_domain(target = "", namespace = "") {
     return domain
 }
 
-def scan_slack_token() {
-    def token = sh(script: "kubectl get secret slack-token -n devops -o json | jq -r .data.text | base64 -d", returnStdout: true).trim()
+def scan_slack_token(namespace = "devops") {
+    def token = sh(script: "kubectl get secret slack-token -n $namespace -o json | jq -r .data.text | base64 -d", returnStdout: true).trim()
 
     if (token) {
         echo "# slack-token: $token"
         this.slack_token = token
     }
+}
+
+def env_cluster(name = "", namespace = "devops") {
+    if (!name?.trim()) {
+        throw new RuntimeException("name is null.")
+    }
+
+    sh "mkdir -p $home/.kube"
+    sh "kubectl get secret kube-config-$name -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 }
 
 def make_chart(name = "", version = "") {
@@ -214,6 +223,10 @@ def helm_install(name = "", version = "", namespace = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
+    if (cluster) {
+        env_cluster(cluster)
+    }
+
     helm_init()
 
     sh """
@@ -231,6 +244,10 @@ def helm_delete(name = "", namespace = "", cluster = "") {
     }
     if (!namespace?.trim()) {
         throw new RuntimeException("namespace is null.")
+    }
+
+    if (cluster) {
+        env_cluster(cluster)
     }
 
     helm_init()
@@ -257,6 +274,10 @@ def draft_up(name = "", namespace = "", cluster = "") {
     }
     if (!namespace?.trim()) {
         throw new RuntimeException("namespace is null.")
+    }
+
+    if (cluster) {
+        env_cluster(cluster)
     }
 
     draft_init()

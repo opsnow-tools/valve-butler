@@ -117,6 +117,8 @@ def env_cluster(name = "", namespace = "devops") {
 
     sh "mkdir -p $home/.kube"
     sh "kubectl get secret kube-config-$name -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
+
+    sh "kubectl cluster-info"
 }
 
 def make_chart(name = "", version = "") {

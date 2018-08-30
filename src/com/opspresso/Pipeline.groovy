@@ -115,6 +115,11 @@ def env_cluster(name = "", namespace = "devops") {
         throw new RuntimeException("name is null.")
     }
 
+    def cluster = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$name' | wc -l", returnStdout: true).trim()
+    if (cluster == 0) {
+        throw new RuntimeException("cluster is null.")
+    }
+
     sh "mkdir -p $home/.kube"
     sh "kubectl get secret kube-config-$name -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 
@@ -236,12 +241,13 @@ def helm_install(name = "", version = "", namespace = "", cluster = "", base_dom
 
     sh """
         helm upgrade --install $name-$namespace chartmuseum/$name \
-                    --version $version --namespace $namespace --devel \
-                    --set fullnameOverride=$name-$namespace \
-                    --set ingress.basedomain=$base_domain
-
-        helm history $name-$namespace --max 5
+                     --version $version --namespace $namespace --devel \
+                     --set fullnameOverride=$name-$namespace \
+                     --set ingress.basedomain=$base_domain
     """
+
+    sh "helm search $name"
+    sh "helm history $name-$namespace --max 5"
 }
 
 def helm_delete(name = "", namespace = "", cluster = "") {
@@ -258,11 +264,10 @@ def helm_delete(name = "", namespace = "", cluster = "") {
 
     helm_init()
 
-    sh """
-        helm search $name
-        helm history $name-$namespace --max 5
-        helm delete --purge $name-$namespace
-    """
+    sh "helm search $name"
+    sh "helm history $name-$namespace --max 5"
+
+    sh "helm delete --purge $name-$namespace"
 }
 
 def draft_init() {

@@ -300,3 +300,13 @@ def draft_up(name = "", namespace = "", cluster = "") {
 
     sh "draft logs"
 }
+
+def notify(token, color = "", title = "", message = "", footer = "") {
+    try {
+        sh """
+            curl -sL toast.sh/helper/slack.sh | bash -s -- --token='$token' \
+            --color='$color' --title='$title' --footer='$footer' '$message'
+        """
+    } catch (ignored) {
+    }
+}

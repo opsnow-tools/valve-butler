@@ -239,6 +239,10 @@ def helm_install(name = "", version = "", namespace = "", cluster = "", base_dom
 
     helm_init()
 
+    if (version == "latest") {
+        version = sh(script: "helm search chartmuseum/$name | grep $name | awk '{print $2}'", returnStdout: true).trim()
+    }
+
     sh """
         helm upgrade --install $name-$namespace chartmuseum/$name \
                      --version $version --namespace $namespace --devel \

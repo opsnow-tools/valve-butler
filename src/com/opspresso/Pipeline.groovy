@@ -279,7 +279,7 @@ def draft_init() {
     }
 }
 
-def draft_up(name = "", namespace = "", cluster = "") {
+def draft_up(name = "", namespace = "", cluster = "", base_domain = "") {
     if (!name) {
         throw new RuntimeException("name is null.")
     }
@@ -289,6 +289,9 @@ def draft_up(name = "", namespace = "", cluster = "") {
 
     if (cluster) {
         env_cluster(cluster)
+    }
+    if (!base_domain) {
+        base_domain = this.base_domain
     }
 
     draft_init()

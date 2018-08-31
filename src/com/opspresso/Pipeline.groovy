@@ -313,7 +313,6 @@ def notify(token, color = "", title = "", message = "", footer = "") {
             curl -sL toast.sh/helper/slack.sh | bash -s -- --token='$token' \
             --color='$color' --title='$title' --footer='$footer' '$message'
         """
-    } catch (e) {
-        echo e
+    } catch (ignored) {
     }
 }

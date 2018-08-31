@@ -239,6 +239,9 @@ def helm_install(name = "", version = "", namespace = "", cluster = "", base_dom
 
     if (version == "latest") {
         version = sh(script: "helm search chartmuseum/$name | grep $name | awk '{print \$2}'", returnStdout: true).trim()
+        if (!version) {
+            throw new RuntimeException("version is null.")
+        }
     }
 
     sh """

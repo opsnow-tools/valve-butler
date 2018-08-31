@@ -240,7 +240,7 @@ def helm_install(name = "", version = "", namespace = "", cluster = "", base_dom
     helm_init()
 
     if (version == "latest") {
-        version = sh(script: "helm search chartmuseum/$name | grep $name | awk '{print $2}'", returnStdout: true).trim()
+        version = sh(script: "helm search chartmuseum/$name | grep $name | awk '{print \$2}'", returnStdout: true).trim()
     }
 
     sh """

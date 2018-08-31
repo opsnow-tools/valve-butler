@@ -103,7 +103,6 @@ def scan_domain(target = "", namespace = "") {
 
 def scan_slack_token(namespace = "devops") {
     def token = sh(script: "kubectl get secret slack-token -n $namespace -o json | jq -r .data.text | base64 -d", returnStdout: true).trim()
-
     if (token) {
         echo "# slack-token: $token"
         this.slack_token = token
@@ -307,7 +306,7 @@ def draft_up(name = "", namespace = "", cluster = "", base_domain = "") {
     sh "draft logs"
 }
 
-def notify(token, color, title, message, footer) {
+def slack(token, color, title, message, footer) {
     try {
         sh """
             curl -sL toast.sh/helper/slack.sh | bash -s -- --token='$token' \

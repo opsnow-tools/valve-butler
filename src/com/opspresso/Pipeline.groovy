@@ -309,7 +309,7 @@ def draft_up(name = "", namespace = "", cluster = "", base_domain = "") {
     sh "draft logs"
 }
 
-def slack(token, color, title, message, footer) {
+def slack(token = "", color = "", title = "", message = "", footer = "") {
     // try {
         sh """
             curl -sL toast.sh/helper/slack.sh | bash -s -- --token='$token' \

@@ -20,7 +20,7 @@ def prepare(namespace = "devops") {
     scan_slack_token()
 }
 
-def scan(name = "", branch = "master") {
+def scan(name = "sample", branch = "master") {
     this.source_lang = ""
     this.source_root = ""
     this.helm_state = ""

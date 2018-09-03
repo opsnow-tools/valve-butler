@@ -216,7 +216,7 @@ def helm_init() {
     this.helm_state = "initialized"
 }
 
-def helm_install(name = "", version = "", namespace = "", cluster = "", base_domain = "") {
+def helm_install(name = "", version = "", namespace = "", base_domain = "", cluster = "") {
     if (!name) {
         throw new RuntimeException("name is null.")
     }
@@ -283,7 +283,7 @@ def draft_init() {
     }
 }
 
-def draft_up(name = "", namespace = "", cluster = "", base_domain = "") {
+def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
     if (!name) {
         throw new RuntimeException("name is null.")
     }

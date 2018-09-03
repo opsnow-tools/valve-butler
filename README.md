@@ -6,6 +6,7 @@
 @Library('github.com/opspresso/pipeline@master')
 def pipeline = new com.opspresso.Pipeline()
 
+pipeline.prepare()
 pipeline.scan()
 ```
 

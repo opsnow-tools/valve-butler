@@ -1,15 +1,28 @@
 #!/usr/bin/groovy
 package com.opspresso;
 
-def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
-    this.name = name
-    this.branch = branch
-    this.namespace = namespace
-    this.cluster = ""
+def prepare(namespace = "devops") {
+    this.base_domain = ""
+    this.slack_token = ""
+
+    // domains
+    this.jenkins = scan_domain("jenkins", namespace)
+    if (this.jenkins) {
+        this.base_domain = this.jenkins.substring(this.jenkins.indexOf('.') + 1)
+    }
+
+    this.chartmuseum = scan_domain("chartmuseum", namespace)
+    this.registry = scan_domain("docker-registry", namespace)
+    this.sonarqube = scan_domain("sonarqube", namespace)
+    this.nexus = scan_domain("sonatype-nexus", namespace)
+
+    // slack token
+    scan_slack_token()
+}
+
+def scan() {
     this.source_lang = ""
     this.source_root = ""
-    this.base_domain = base_domain
-    this.slack_token = ""
     this.helm_state = ""
 
     // version
@@ -23,17 +36,6 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     this.version = version
     echo "# version: $version"
 
-    // domains
-    this.jenkins = scan_domain("jenkins", namespace)
-    if (this.jenkins) {
-        this.base_domain = this.jenkins.substring(this.jenkins.indexOf('.') + 1)
-    }
-
-    this.chartmuseum = scan_domain("chartmuseum", namespace)
-    this.registry = scan_domain("docker-registry", namespace)
-    this.sonarqube = scan_domain("sonarqube", namespace)
-    this.nexus = scan_domain("sonatype-nexus", namespace)
-
     // language
     if (!this.source_lang) {
         scan_langusge("pom.xml", "java")
@@ -41,9 +43,6 @@ def scan(name = "", branch = "master", namespace = "devops", base_domain = "") {
     if (!this.source_lang) {
         scan_langusge("package.json", "nodejs")
     }
-
-    // slack token
-    scan_slack_token()
 
     // chart
     make_chart(name, version)
@@ -309,12 +308,14 @@ def draft_up(name = "", namespace = "", cluster = "", base_domain = "") {
     sh "draft logs"
 }
 
-def slack(token, color, title, message, footer) {
-    try {
-        sh """
-            curl -sL toast.sh/helper/slack.sh | bash -s -- --token='$token' \
-            --color='$color' --title='$title' --footer='$footer' '$message'
-        """
-    } catch (ignored) {
+def slack(token = "", color = "", title = "", message = "", footer = "") {
+    if (token) {
+        // try {
+            sh """
+                curl -sL toast.sh/helper/slack.sh | bash -s -- --token='$token' \
+                --color='$color' --title='$title' --footer='$footer' '$message'
+            """
+        // } catch (ignored) {
+        // }
     }
 }

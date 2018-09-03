@@ -28,9 +28,9 @@ def scan(name = "sample", branch = "master") {
     // version
     if (branch == "master") {
         date = new Date().format('yyyyMMdd-HHmm')
-        version = "0.1.1-$date"
+        version = "v0.1.1-$date"
     } else {
-        version = "v0.0.0"
+        version = "v0.0.1"
     }
 
     this.version = version

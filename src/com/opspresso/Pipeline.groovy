@@ -4,6 +4,7 @@ package com.opspresso;
 def prepare(namespace = "devops") {
     this.base_domain = ""
     this.slack_token = ""
+    this.helm_state = ""
 
     // domains
     this.jenkins = scan_domain("jenkins", namespace)
@@ -23,7 +24,6 @@ def prepare(namespace = "devops") {
 def scan(name = "sample", branch = "master") {
     this.source_lang = ""
     this.source_root = ""
-    this.helm_state = ""
 
     // version
     if (branch == "master") {

@@ -3,7 +3,7 @@
 ```groovy
 // Requires [Pipeline: GitHub Groovy Libraries]
 // https://plugins.jenkins.io/pipeline-github-lib
-@Library('github.com/opspresso/pipeline')
+@Library("github.com/opspresso/pipeline")
 def pipeline = new com.opspresso.Pipeline()
 
 pipeline.prepare()

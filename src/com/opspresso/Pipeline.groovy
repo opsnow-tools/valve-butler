@@ -198,6 +198,29 @@ def build_image(name = "", version = "") {
     """
 }
 
+def env_apply(type = "", name = "", namespace = "", cluster = "") {
+    if (!type) {
+        throw new RuntimeException("type is null.")
+    }
+    if (!name) {
+        throw new RuntimeException("name is null.")
+    }
+    if (!namespace) {
+        throw new RuntimeException("namespace is null.")
+    }
+
+    def env = ""
+    if (cluster) {
+        env = sh(script: "find . -name find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+    } else {
+        env = sh(script: "find . -name find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+    }
+    if (env) {
+        sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $env"
+        sh "kubectl apply -n $namespace -f $env"
+    }
+}
+
 def helm_init() {
     if (this.helm_state) {
         return
@@ -233,6 +256,9 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
     if (!base_domain) {
         base_domain = this.base_domain
     }
+
+    env_apply("configmap", "$name", "$namespace", "$cluster")
+    env_apply("secret", "$name", "$namespace", "$cluster")
 
     helm_init()
 

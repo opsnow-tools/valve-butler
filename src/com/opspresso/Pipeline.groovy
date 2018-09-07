@@ -144,7 +144,9 @@ def env_apply(type = "", name = "", namespace = "", cluster = "") {
     if (env) {
         sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $env"
         sh "kubectl apply -n $namespace -f $env"
+        return "true"
     }
+    return "false"
 }
 
 def make_chart(name = "", version = "") {
@@ -257,8 +259,8 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         base_domain = this.base_domain
     }
 
-    env_apply("config", "$name", "$namespace", "$cluster")
-    env_apply("secret", "$name", "$namespace", "$cluster")
+    configmap = env_apply("configmap", "$name", "$namespace", "$cluster")
+    secret = env_apply("secret", "$name", "$namespace", "$cluster")
 
     helm_init()
 
@@ -273,7 +275,9 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         helm upgrade --install $name-$namespace chartmuseum/$name \
                      --version $version --namespace $namespace --devel \
                      --set fullnameOverride=$name-$namespace \
-                     --set ingress.basedomain=$base_domain
+                     --set ingress.basedomain=$base_domain \
+                     --set configmap.enabled=$configmap \
+                     --set secret.enabled=$secret
     """
 
     sh "helm search $name"

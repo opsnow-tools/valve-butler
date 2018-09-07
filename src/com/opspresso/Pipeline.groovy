@@ -211,9 +211,9 @@ def env_apply(type = "", name = "", namespace = "", cluster = "") {
 
     def env = ""
     if (cluster) {
-        env = sh(script: "find . -name find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+        env = sh(script: "find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
     } else {
-        env = sh(script: "find . -name find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+        env = sh(script: "find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
     }
     if (env) {
         sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $env"

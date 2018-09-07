@@ -113,8 +113,8 @@ def env_cluster(cluster = "", namespace = "devops") {
         throw new RuntimeException("cluster is null.")
     }
 
-    def cluster = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
-    if (cluster == 0) {
+    def count = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
+    if (count == 0) {
         throw new RuntimeException("cluster is null.")
     }
 
@@ -257,7 +257,7 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         base_domain = this.base_domain
     }
 
-    env_apply("configmap", "$name", "$namespace", "$cluster")
+    env_apply("config", "$name", "$namespace", "$cluster")
     env_apply("secret", "$name", "$namespace", "$cluster")
 
     helm_init()

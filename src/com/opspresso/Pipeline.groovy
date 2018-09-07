@@ -108,20 +108,45 @@ def scan_slack_token(namespace = "devops") {
     }
 }
 
-def env_cluster(name = "", namespace = "devops") {
-    if (!name) {
-        throw new RuntimeException("name is null.")
+def env_cluster(cluster = "", namespace = "devops") {
+    if (!cluster) {
+        throw new RuntimeException("cluster is null.")
     }
 
-    def cluster = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$name' | wc -l", returnStdout: true).trim()
-    if (cluster == 0) {
+    def count = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
+    if (count == 0) {
         throw new RuntimeException("cluster is null.")
     }
 
     sh "mkdir -p $home/.kube"
-    sh "kubectl get secret kube-config-$name -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
+    sh "kubectl get secret kube-config-$cluster -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 
     sh "kubectl cluster-info"
+}
+
+def env_apply(type = "", name = "", namespace = "", cluster = "") {
+    if (!type) {
+        throw new RuntimeException("type is null.")
+    }
+    if (!name) {
+        throw new RuntimeException("name is null.")
+    }
+    if (!namespace) {
+        throw new RuntimeException("namespace is null.")
+    }
+
+    def env = ""
+    if (cluster) {
+        env = sh(script: "find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+    } else {
+        env = sh(script: "find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+    }
+    if (env) {
+        sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $env"
+        sh "kubectl apply -n $namespace -f $env"
+        return "true"
+    }
+    return "false"
 }
 
 def make_chart(name = "", version = "") {
@@ -234,6 +259,9 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         base_domain = this.base_domain
     }
 
+    configmap = env_apply("configmap", "$name", "$namespace", "$cluster")
+    secret = env_apply("secret", "$name", "$namespace", "$cluster")
+
     helm_init()
 
     if (version == "latest") {
@@ -247,7 +275,9 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         helm upgrade --install $name-$namespace chartmuseum/$name \
                      --version $version --namespace $namespace --devel \
                      --set fullnameOverride=$name-$namespace \
-                     --set ingress.basedomain=$base_domain
+                     --set ingress.basedomain=$base_domain \
+                     --set configmap.enabled=$configmap \
+                     --set secret.enabled=$secret
     """
 
     sh "helm search $name"

@@ -252,9 +252,13 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         throw new RuntimeException("namespace is null.")
     }
 
+    profile = "$namespace"
+
     if (cluster) {
         env_cluster(cluster)
+        profile = "$cluster-$namespace"
     }
+
     if (!base_domain) {
         base_domain = this.base_domain
     }
@@ -277,7 +281,8 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
                      --set fullnameOverride=$name-$namespace \
                      --set ingress.basedomain=$base_domain \
                      --set configmap.enabled=$configmap \
-                     --set secret.enabled=$secret
+                     --set secret.enabled=$secret \
+                     --set profile=$profile
     """
 
     sh "helm search $name"

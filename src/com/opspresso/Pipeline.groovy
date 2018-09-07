@@ -113,6 +113,7 @@ def env_cluster(cluster = "", namespace = "devops") {
         throw new RuntimeException("cluster is null.")
     }
 
+    // check cluster secret
     def count = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
     if (count == 0) {
         throw new RuntimeException("cluster is null.")
@@ -135,12 +136,21 @@ def env_apply(type = "", name = "", namespace = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
+    // check namespace
+    def count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()
+    if (count == 0) {
+        sh "kubectl create namespace $namespace"
+    }
+
+    // env yaml
     def env = ""
     if (cluster) {
         env = sh(script: "find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
     } else {
         env = sh(script: "find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
     }
+
+    // env apply
     if (env) {
         sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $env"
         sh "kubectl apply -n $namespace -f $env"
@@ -345,12 +355,12 @@ def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
 
 def slack(token = "", color = "", title = "", message = "", footer = "") {
     if (token) {
-        // try {
+        try {
             sh """
                 curl -sL toast.sh/helper/slack.sh | bash -s -- --token='$token' \
                 --color='$color' --title='$title' --footer='$footer' '$message'
             """
-        // } catch (ignored) {
-        // }
+        } catch (ignored) {
+        }
     }
 }

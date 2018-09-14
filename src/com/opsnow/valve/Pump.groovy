@@ -169,7 +169,7 @@ def make_chart(name = "", version = "") {
 
     def chart = sh(script: "find . -name Chart.yaml | head -1", returnStdout: true).trim()
     if (chart) {
-        sh "mv charts/acme charts/$name"
+        // sh "mv charts/acme charts/$name"
 
         dir("charts/$name") {
             sh "sed -i -e \"s/name: .*/name: $name/\" Chart.yaml"

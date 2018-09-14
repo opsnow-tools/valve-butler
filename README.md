@@ -1,13 +1,13 @@
-# pipeline
+# valve-pump
 
 ```groovy
 // Requires [Pipeline: GitHub Groovy Libraries]
 // https://plugins.jenkins.io/pipeline-github-lib
-@Library("github.com/opspresso/pipeline")
-def pipeline = new com.opspresso.Pipeline()
+@Library("github.com/opsnow-tools/valve-pump")
+def pump = new com.opsnow.valve.Pump()
 
-pipeline.prepare()
-pipeline.scan()
+pump.prepare()
+pump.scan()
 ```
 
 * <https://jenkins.io/doc/pipeline/steps/workflow-basic-steps/>

@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-package com.opspresso;
+package com.opsnow.valve;
 
 def prepare(namespace = "devops") {
     this.base_domain = ""

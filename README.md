@@ -4,10 +4,10 @@
 // Requires [Pipeline: GitHub Groovy Libraries]
 // https://plugins.jenkins.io/pipeline-github-lib
 @Library("github.com/opsnow-tools/valve-butler")
-def pump = new com.opsnow.valve.Butler()
+def butler = new com.opsnow.valve.Butler()
 
-pump.prepare()
-pump.scan()
+butler.prepare()
+butler.scan()
 ```
 
 * <https://jenkins.io/doc/pipeline/steps/workflow-basic-steps/>

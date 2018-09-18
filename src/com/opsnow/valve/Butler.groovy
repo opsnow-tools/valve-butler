@@ -264,10 +264,10 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
 
     profile = "$namespace"
 
-    if (cluster) {
-        env_cluster(cluster)
-        profile = "$cluster-$namespace"
-    }
+    // if (cluster) {
+    //     env_cluster(cluster)
+    //     profile = "$cluster-$namespace"
+    // }
 
     if (!base_domain) {
         base_domain = this.base_domain

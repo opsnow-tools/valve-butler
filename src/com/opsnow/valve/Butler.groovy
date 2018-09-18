@@ -21,8 +21,8 @@ def prepare(namespace = "devops") {
     scan_slack_token()
 }
 
-def scan(name = "sample", branch = "master") {
-    this.source_lang = ""
+def scan(name = "sample", branch = "master", source_lang = "") {
+    this.source_lang = source_lang
     this.source_root = ""
 
     // version
@@ -37,10 +37,10 @@ def scan(name = "sample", branch = "master") {
     echo "# version: $version"
 
     // language
-    if (!this.source_lang) {
+    if (!this.source_lang || this.source_lang == "java") {
         scan_langusge("pom.xml", "java")
     }
-    if (!this.source_lang) {
+    if (!this.source_lang || this.source_lang == "nodejs") {
         scan_langusge("package.json", "nodejs")
     }
 

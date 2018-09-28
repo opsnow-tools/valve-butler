@@ -434,11 +434,11 @@ def mvn_sonar() {
     }
 }
 
-def failure(token = "", type = "", name = "") {
+def failure(type = "", name = "") {
   slack("danger", "$type Failure", "`$name`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
 }
 
-def success(token = "", type = "", name = "", version = "", namespace = "", base_domain = "", cluster = "") {
+def success(type = "", name = "", version = "", namespace = "", base_domain = "", cluster = "") {
   if (cluster) {
     def link = "https://$name-$namespace.$base_domain"
     slack("good", "$type Success", "`$name` `$version` :satellite: `$namespace` :earth_asia: `$cluster`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
@@ -452,17 +452,17 @@ def success(token = "", type = "", name = "", version = "", namespace = "", base
   }
 }
 
-def proceed(token = "", type = "", name = "", version = "", namespace = "") {
+def proceed(type = "", name = "", version = "", namespace = "") {
   slack("warning", "$type Proceed?", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
 }
 
 def slack(color = "", title = "", message = "", footer = "") {
-    // if (this.slack_token) {
-        try {
+    // try {
+        // if (this.slack_token) {
             sh """
                 curl -sL toast.sh/slack | bash -s -- --token='${this.slack_token}' --color='$color' --title='$title' --footer='$footer' '$message'
             """
-        } catch (ignored) {
-        }
+        // }
+    // } catch (ignored) {
     // }
 }

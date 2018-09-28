@@ -353,6 +353,13 @@ def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
     sh "draft logs"
 }
 
+def npm_build() {
+    def source_root = this.source_root
+    dir("$source_root") {
+        sh "npm run build"
+    }
+}
+
 def mvn_build() {
     def source_root = this.source_root
     dir("$source_root") {

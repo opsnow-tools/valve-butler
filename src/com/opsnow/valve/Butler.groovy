@@ -122,7 +122,7 @@ def env_cluster(cluster = "", namespace = "devops") {
     sh "mkdir -p $home/.kube"
     sh "kubectl get secret kube-config-$cluster -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 
-    sh "kubectl cluster-info"
+    // sh "kubectl cluster-info"
     sh "kubectl config current-context"
 
     // check current context

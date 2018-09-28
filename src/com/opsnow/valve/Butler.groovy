@@ -446,12 +446,12 @@ def proceed(token = "", type = "", name = "", version = "", namespace = "") {
 }
 
 def slack(color = "", title = "", message = "", footer = "") {
-    if (this.slack_token) {
+    // if (this.slack_token) {
         try {
             sh """
                 curl -sL toast.sh/slack | bash -s -- --token='${this.slack_token}' --color='$color' --title='$title' --footer='$footer' '$message'
             """
         } catch (ignored) {
         }
-    }
+    // }
 }

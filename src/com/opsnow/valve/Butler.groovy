@@ -123,6 +123,7 @@ def env_cluster(cluster = "", namespace = "devops") {
     sh "kubectl get secret kube-config-$cluster -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 
     sh "kubectl cluster-info"
+    sh "kubectl config current-context"
 
     // check current context
     def count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()

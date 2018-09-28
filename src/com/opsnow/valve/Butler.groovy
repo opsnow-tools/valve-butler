@@ -375,6 +375,17 @@ def mvn_test() {
     }
 }
 
+def mvn_deploy() {
+    def source_root = this.source_root
+    dir("$source_root") {
+        if (this.nexus) {
+            sh "mvn deploy -s /home/jenkins/.m2/settings.xml -DskipTests=true"
+        } else {
+            sh "mvn deploy -DskipTests=true"
+        }
+    }
+}
+
 def mvn_sonar() {
     def sonarqube = this.sonarqube
     if (sonarqube) {

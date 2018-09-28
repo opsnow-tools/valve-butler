@@ -23,7 +23,7 @@ def prepare(namespace = "devops") {
 
 def scan(name = "sample", branch = "master", source_lang = "") {
     this.source_lang = source_lang
-    this.source_root = ""
+    this.source_root = "."
 
     // version
     if (branch == "master") {
@@ -351,6 +351,30 @@ def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
     sh "draft up -e $namespace"
 
     sh "draft logs"
+}
+
+def mvn_build() {
+    def source_root = this.source_root
+    dir("$source_root") {
+        sh "mvn package -s /home/jenkins/.m2/settings.xml -DskipTests=true"
+    }
+}
+
+def mvn_test() {
+    def source_root = this.source_root
+    dir("$source_root") {
+        sh "mvn test -s /home/jenkins/.m2/settings.xml"
+    }
+}
+
+def mvn_sonar() {
+    def sonarqube = this.sonarqube
+    if (sonarqube) {
+        def source_root = this.source_root
+        dir("$source_root") {
+            sh "mvn sonar:sonar -s /home/jenkins/.m2/settings.xml -Dsonar.host.url=$sonarqube -DskipTests=true"
+        }
+    }
 }
 
 def slack(token = "", color = "", title = "", message = "", footer = "") {

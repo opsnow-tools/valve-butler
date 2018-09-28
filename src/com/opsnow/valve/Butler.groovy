@@ -399,7 +399,7 @@ def mvn_sonar() {
         def source_root = this.source_root
         dir("$source_root") {
             if (this.nexus) {
-                sh "mvn sonar:sonar -s /home/jenkins/.m2/settings.xml -Dsonar.host.url=$sonarqube -DskipTests=true"
+                sh "mvn sonar:sonar -s /home/jenkins/.m2/settings.xml -Dsonar.host.url=http://$sonarqube -DskipTests=true"
             } else {
                 sh "mvn sonar:sonar -Dsonar.host.url=$sonarqube -DskipTests=true"
             }

@@ -63,18 +63,24 @@ def scan_langusge(target = "", source_lang = "") {
 
             // maven mirror
             if (source_lang == 'java') {
-                if (this.nexus) {
-                    def home = "/home/jenkins"
+                // replace this.version
+                // dir(source_root) {
+                //     sh "sed -i -e \"s|(<this.version>)(.*)(</this.version>)|\1${this.version}\3|\" pom.xml | true"
+                // }
 
-                    sh "mkdir -p $home/.m2"
-                    sh "cp -f /root/.m2/settings.xml $home/.m2/settings.xml | true"
+                if (this.nexus) {
+                    def m2_home = "/home/jenkins/.m2"
+
+                    sh "mkdir -p $m2_home"
+                    sh "cp -f /root/.m2/settings.xml $m2_home/settings.xml | true"
 
                     def public_url = "http://${this.nexus}/repository/maven-public/"
                     def mirror_xml = "<mirror><id>mirror</id><url>${public_url}</url><mirrorOf>*</mirrorOf></mirror>"
 
                     echo "# maven-public: $public_url"
 
-                    sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $home/.m2/settings.xml | true"
+                    // replace maven-public
+                    sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $m2_home/settings.xml | true"
                 }
             }
         }

@@ -205,13 +205,15 @@ def build_chart(name = "", version = "") {
 
     helm_init()
 
-    def helm_push = sh(script: "helm plugin list | grep 'Push chart package' | wc -l", returnStdout: true).trim()
-    if (helm_push == '0') {
+    // check plugin
+    count = sh(script: "helm plugin list | grep 'Push chart package' | wc -l", returnStdout: true).trim()
+    if (count == 0) {
         sh "helm plugin install https://github.com/chartmuseum/helm-push"
     }
     sh "helm plugin list"
 
-    def chart = sh(script: "find . -name Chart.yaml | head -1", returnStdout: true).trim()
+    // check chart
+    chart = sh(script: "find . -name Chart.yaml | head -1", returnStdout: true).trim()
     if (chart) {
         dir("charts/$name") {
             sh "helm lint ."

@@ -139,7 +139,19 @@ def env_cluster(cluster = "", namespace = "devops") {
     }
 }
 
-def env_apply(type = "", name = "", namespace = "", cluster = "") {
+def env_namespace(namespace = "") {
+    if (!namespace) {
+        throw new RuntimeException("namespace is null.")
+    }
+
+    // check namespace
+    count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()
+    if (count == 0) {
+        sh "kubectl create namespace $namespace"
+    }
+}
+
+def cm_apply(type = "", name = "", namespace = "", cluster = "") {
     if (!type) {
         throw new RuntimeException("type is null.")
     }
@@ -150,24 +162,18 @@ def env_apply(type = "", name = "", namespace = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
-    // check namespace
-    count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()
-    if (count == 0) {
-        sh "kubectl create namespace $namespace"
-    }
-
     // env yaml
-    def env = ""
+    def cm = ""
     if (cluster) {
-        env = sh(script: "find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+        cm = sh(script: "find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
     } else {
-        env = sh(script: "find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+        cm = sh(script: "find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
     }
 
     // env apply
-    if (env) {
-        sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $env"
-        sh "kubectl apply -n $namespace -f $env"
+    if (cm) {
+        sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $cm"
+        sh "kubectl apply -n $namespace -f $cm"
         return "true"
     }
     return "false"
@@ -285,12 +291,14 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         // profile = "$cluster-$namespace"
     }
 
+    env_namespace(namespace)
+
     if (!base_domain) {
         base_domain = this.base_domain
     }
 
-    configmap = env_apply("configmap", "$name", "$namespace", "$cluster")
-    secret = env_apply("secret", "$name", "$namespace", "$cluster")
+    // configmap = cm_apply("configmap", "$name", "$namespace", "$cluster")
+    // secret = cm_apply("secret", "$name", "$namespace", "$cluster")
 
     helm_init()
 
@@ -306,10 +314,10 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
                      --version $version --namespace $namespace --devel \
                      --set fullnameOverride=$name-$namespace \
                      --set ingress.basedomain=$base_domain \
-                     --set configmap.enabled=$configmap \
-                     --set secret.enabled=$secret \
                      --set profile=$profile
     """
+                    //  --set configmap.enabled=$configmap \
+                    //  --set secret.enabled=$secret \
 
     sh "helm search $name"
     sh "helm history $name-$namespace --max 5"
@@ -355,6 +363,9 @@ def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
     if (cluster) {
         env_cluster(cluster)
     }
+
+    env_namespace(namespace)
+
     if (!base_domain) {
         base_domain = this.base_domain
     }

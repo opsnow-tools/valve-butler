@@ -123,6 +123,12 @@ def env_cluster(cluster = "", namespace = "devops") {
     sh "kubectl get secret kube-config-$cluster -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 
     sh "kubectl cluster-info"
+
+    // check current context
+    def count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()
+    if (count == 0) {
+        throw new RuntimeException("current-context is not match.")
+    }
 }
 
 def env_apply(type = "", name = "", namespace = "", cluster = "") {

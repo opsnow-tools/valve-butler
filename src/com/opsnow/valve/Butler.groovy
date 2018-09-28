@@ -114,7 +114,7 @@ def env_cluster(cluster = "", namespace = "devops") {
     }
 
     // check cluster secret
-    def count = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
     if (count == 0) {
         throw new RuntimeException("cluster is null.")
     }
@@ -126,7 +126,7 @@ def env_cluster(cluster = "", namespace = "devops") {
     sh "kubectl config current-context"
 
     // check current context
-    def count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()
     if (count == 0) {
         throw new RuntimeException("current-context is not match.")
     }
@@ -144,7 +144,7 @@ def env_apply(type = "", name = "", namespace = "", cluster = "") {
     }
 
     // check namespace
-    def count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()
     if (count == 0) {
         sh "kubectl create namespace $namespace"
     }

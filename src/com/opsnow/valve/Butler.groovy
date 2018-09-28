@@ -356,14 +356,22 @@ def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
 def mvn_build() {
     def source_root = this.source_root
     dir("$source_root") {
-        sh "mvn package -s /home/jenkins/.m2/settings.xml -DskipTests=true"
+        if (this.nexus) {
+            sh "mvn package -s /home/jenkins/.m2/settings.xml -DskipTests=true"
+        } else {
+            sh "mvn package -DskipTests=true"
+        }
     }
 }
 
 def mvn_test() {
     def source_root = this.source_root
     dir("$source_root") {
-        sh "mvn test -s /home/jenkins/.m2/settings.xml"
+        if (this.nexus) {
+            sh "mvn test -s /home/jenkins/.m2/settings.xml"
+        } else {
+            sh "mvn test"
+        }
     }
 }
 
@@ -372,7 +380,11 @@ def mvn_sonar() {
     if (sonarqube) {
         def source_root = this.source_root
         dir("$source_root") {
-            sh "mvn sonar:sonar -s /home/jenkins/.m2/settings.xml -Dsonar.host.url=$sonarqube -DskipTests=true"
+            if (this.nexus) {
+                sh "mvn sonar:sonar -s /home/jenkins/.m2/settings.xml -Dsonar.host.url=$sonarqube -DskipTests=true"
+            } else {
+                sh "mvn sonar:sonar -Dsonar.host.url=$sonarqube -DskipTests=true"
+            }
         }
     }
 }

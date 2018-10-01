@@ -205,9 +205,13 @@ def apply_config(type = "", name = "", namespace = "", cluster = "") {
         throw new RuntimeException("yaml is null.")
     }
 
-    // config apply
     sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $yaml"
+
+    // apply secret
     sh "kubectl apply -n $namespace -f $yaml"
+
+    // describe secret
+    sh "kubectl describe secret $name-$namespace -n $namespace"
 }
 
 def make_chart(name = "", version = "") {

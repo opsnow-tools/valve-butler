@@ -196,17 +196,16 @@ def apply_config(type = "", name = "", namespace = "", cluster = "") {
     // config yaml
     def yaml = ""
     if (cluster) {
-        yaml = sh(script: "find . -name $name | grep $type/$cluster/$namespace/$name | head -1", returnStdout: true).trim()
+        yaml = sh(script: "find . -name $name-$namespace | grep yaml | grep $type/$cluster/$namespace/$name-$namespace | head -1", returnStdout: true).trim()
     } else {
-        yaml = sh(script: "find . -name $name | grep $type/$namespace/$name | head -1", returnStdout: true).trim()
+        yaml = sh(script: "find . -name $name-$namespace | grep yaml | grep $type/$namespace/$name-$namespace | head -1", returnStdout: true).trim()
     }
 
     // config apply
     if (yaml) {
-        // sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $yaml"
+        sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $yaml"
         sh "kubectl apply -n $namespace -f $yaml"
     }
-
 }
 
 def make_chart(name = "", version = "") {

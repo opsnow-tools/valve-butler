@@ -117,7 +117,8 @@ def scan_slack_token(namespace = "devops") {
 
 def env_cluster(cluster = "", namespace = "devops") {
     if (!cluster) {
-        throw new RuntimeException("cluster is null.")
+        // throw new RuntimeException("cluster is null.")
+        return
     }
 
     // check cluster secret
@@ -312,13 +313,12 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
     }
 
     profile = "$namespace"
+    // if (cluster) {
+    //     profile = "$cluster-$namespace"
+    // }
 
-    if (cluster) {
-        // profile = "$cluster-$namespace"
-
-        // cluster
-        env_cluster(cluster)
-    }
+    // cluster
+    env_cluster(cluster)
 
     // namespace
     env_namespace(namespace)
@@ -361,10 +361,8 @@ def helm_delete(name = "", namespace = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
-    if (cluster) {
-        // cluster
-        env_cluster(cluster)
-    }
+    // cluster
+    env_cluster(cluster)
 
     helm_init()
 
@@ -391,10 +389,8 @@ def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
-    if (cluster) {
-        // cluster
-        env_cluster(cluster)
-    }
+    // cluster
+    env_cluster(cluster)
 
     // namespace
     env_namespace(namespace)

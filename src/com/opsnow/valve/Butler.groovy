@@ -165,12 +165,9 @@ def env_config(type = "", name = "", namespace = "") {
         throw new RuntimeException("namespace is null.")
     }
 
-    sh "kubectl get $type -n $namespace 2>&1 | grep '$name-$namespace' | wc -l"
-
     // check config
     count = sh(script: "kubectl get $type -n $namespace 2>&1 | grep '$name-$namespace' | wc -l", returnStdout: true).trim()
-    sh "echo - $count -"
-    if (count == 0) {
+    if ("$count" == "0") {
         return "false"
     }
     return "true"

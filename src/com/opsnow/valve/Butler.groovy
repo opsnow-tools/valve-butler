@@ -129,9 +129,6 @@ def env_cluster(cluster = "", namespace = "devops") {
     sh "mkdir -p $home/.kube"
     sh "kubectl get secret kube-config-$cluster -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 
-    // sh "kubectl cluster-info"
-    sh "kubectl config current-context"
-
     // check current context
     count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()
     if (count == 0) {
@@ -143,6 +140,9 @@ def env_namespace(namespace = "") {
     if (!namespace) {
         throw new RuntimeException("namespace is null.")
     }
+
+    // sh "kubectl cluster-info"
+    sh "kubectl config current-context"
 
     // check namespace
     count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()
@@ -340,6 +340,7 @@ def helm_delete(name = "", namespace = "", cluster = "") {
     }
 
     if (cluster) {
+        // cluster
         env_cluster(cluster)
     }
 
@@ -369,9 +370,11 @@ def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
     }
 
     if (cluster) {
+        // cluster
         env_cluster(cluster)
     }
 
+    // namespace
     env_namespace(namespace)
 
     if (!base_domain) {

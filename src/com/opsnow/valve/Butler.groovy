@@ -132,6 +132,9 @@ def env_cluster(cluster = "", namespace = "devops") {
 
     sh "kubectl get secret kube-config-$cluster -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 
+    // sh "kubectl cluster-info"
+    sh "kubectl config current-context"
+
     // check current context
     count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
@@ -143,9 +146,6 @@ def env_namespace(namespace = "") {
     if (!namespace) {
         throw new RuntimeException("namespace is null.")
     }
-
-    // sh "kubectl cluster-info"
-    sh "kubectl config current-context"
 
     // check namespace
     count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()

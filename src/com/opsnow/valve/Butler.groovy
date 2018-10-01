@@ -196,9 +196,9 @@ def apply_config(type = "", name = "", namespace = "", cluster = "") {
     // config yaml
     def yaml = ""
     if (cluster) {
-        yaml = sh(script: "find . -name $name | grep $type/$cluster/$namespace/${name}.yaml | head -1", returnStdout: true).trim()
+        yaml = sh(script: "find . -name ${name}.yaml | grep $type/$cluster/$namespace/${name}.yaml | head -1", returnStdout: true).trim()
     } else {
-        yaml = sh(script: "find . -name $name | grep $type/$namespace/${name}.yaml | head -1", returnStdout: true).trim()
+        yaml = sh(script: "find . -name ${name}.yaml | grep $type/$namespace/${name}.yaml | head -1", returnStdout: true).trim()
     }
 
     if (!yaml) {

@@ -151,7 +151,7 @@ def env_namespace(namespace = "") {
     }
 }
 
-def cm_apply(type = "", name = "", namespace = "", cluster = "") {
+def env_config(type = "", name = "", namespace = "") {
     if (!type) {
         throw new RuntimeException("type is null.")
     }
@@ -162,21 +162,26 @@ def cm_apply(type = "", name = "", namespace = "", cluster = "") {
         throw new RuntimeException("namespace is null.")
     }
 
-    // env yaml
-    def cm = ""
-    if (cluster) {
-        cm = sh(script: "find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
-    } else {
-        cm = sh(script: "find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
-    }
+    // // env yaml
+    // def cm = ""
+    // if (cluster) {
+    //     cm = sh(script: "find . -name ${type}.yaml | grep env/$cluster/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+    // } else {
+    //     cm = sh(script: "find . -name ${type}.yaml | grep env/$namespace/${type}.yaml | head -1", returnStdout: true).trim()
+    // }
 
-    // env apply
-    if (cm) {
-        sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $cm"
-        sh "kubectl apply -n $namespace -f $cm"
-        return "true"
+    // // env apply
+    // if (cm) {
+    //     sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $cm"
+    //     sh "kubectl apply -n $namespace -f $cm"
+    // }
+
+    // check config
+    count = sh(script: "kubectl get $type -n $namespace | grep '$name-$namespace' | wc -l", returnStdout: true).trim()
+    if (count == 0) {
+        return "false"
     }
-    return "false"
+    return "true"
 }
 
 def make_chart(name = "", version = "") {
@@ -287,18 +292,21 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
     profile = "$namespace"
 
     if (cluster) {
-        env_cluster(cluster)
         // profile = "$cluster-$namespace"
+
+        // cluster
+        env_cluster(cluster)
     }
 
+    // namespace
     env_namespace(namespace)
+
+    // config (secret, configmap)
+    secret = env_config("secret", name, namespace)
 
     if (!base_domain) {
         base_domain = this.base_domain
     }
-
-    // configmap = cm_apply("configmap", "$name", "$namespace", "$cluster")
-    // secret = cm_apply("secret", "$name", "$namespace", "$cluster")
 
     helm_init()
 
@@ -314,10 +322,10 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
                      --version $version --namespace $namespace --devel \
                      --set fullnameOverride=$name-$namespace \
                      --set ingress.basedomain=$base_domain \
+                     --set secret.enabled=$secret \
                      --set profile=$profile
     """
                     //  --set configmap.enabled=$configmap \
-                    //  --set secret.enabled=$secret \
 
     sh "helm search $name"
     sh "helm history $name-$namespace --max 5"

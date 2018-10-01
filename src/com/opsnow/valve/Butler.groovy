@@ -121,18 +121,20 @@ def env_cluster(cluster = "", namespace = "devops") {
         return
     }
 
+    sh "rm -rf $home/.kube"
+    sh "mkdir -p $home/.kube"
+
     // check cluster secret
     count = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
-    if (count == "0") {
+    if (count == 0) {
         throw new RuntimeException("cluster is null.")
     }
 
-    sh "mkdir -p $home/.kube"
     sh "kubectl get secret kube-config-$cluster -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config"
 
     // check current context
     count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()
-    if (count == "0") {
+    if (count == 0) {
         throw new RuntimeException("current-context is not match.")
     }
 }
@@ -147,7 +149,7 @@ def env_namespace(namespace = "") {
 
     // check namespace
     count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()
-    if (count == "0") {
+    if (count == 0) {
         sh "kubectl create namespace $namespace"
     }
 }
@@ -164,8 +166,8 @@ def env_config(type = "", name = "", namespace = "") {
     }
 
     // check config
-    count = sh(script: "kubectl get $type -n $namespace | grep '$name-$namespace' | wc -l", returnStdout: true).trim()
-    if (count == "0") {
+    count = sh(script: "kubectl get $type -n $namespace 2>&1 | grep '$name-$namespace' | wc -l", returnStdout: true).trim()
+    if (count == 0) {
         return "false"
     }
     return "true"
@@ -248,7 +250,7 @@ def build_chart(name = "", version = "") {
 
     // check push plugin
     count = sh(script: "helm plugin list | grep 'Push chart package' | wc -l", returnStdout: true).trim()
-    if (count == "0") {
+    if (count == 0) {
         sh "helm plugin install https://github.com/chartmuseum/helm-push"
     }
     sh "helm plugin list"

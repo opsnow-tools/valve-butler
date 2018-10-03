@@ -495,7 +495,7 @@ def slack(color = "", title = "", message = "", footer = "") {
         // if (this.slack_token) {
             sh """
                 curl -sL toast.sh/slack | bash -s -- \
-                    --token='${this.slack_token}'
+                    --token='${this.slack_token}' \
                     --emoji=":construction_worker:" --username="valve" \
                     --color='$color' --title='$title' --footer='$footer' '$message'
             """

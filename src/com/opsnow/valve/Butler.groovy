@@ -284,10 +284,8 @@ def build_image(name = "", version = "") {
         throw new RuntimeException("version is null.")
     }
 
-    sh """
-        docker build -t $registry/$name:$version .
-        docker push $registry/$name:$version
-    """
+    sh "docker build -t $registry/$name:$version ."
+    sh "docker push $registry/$name:$version"
 }
 
 def helm_init() {
@@ -496,7 +494,10 @@ def slack(color = "", title = "", message = "", footer = "") {
     // try {
         // if (this.slack_token) {
             sh """
-                curl -sL toast.sh/slack | bash -s -- --token='${this.slack_token}' --color='$color' --title='$title' --footer='$footer' '$message'
+                curl -sL toast.sh/slack | bash -s -- \
+                    --token='${this.slack_token}'
+                    --emoji=":construction_worker:" --username="valve" \
+                    --color='$color' --title='$title' --footer='$footer' '$message'
             """
         // }
     // } catch (ignored) {

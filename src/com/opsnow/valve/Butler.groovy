@@ -75,10 +75,11 @@ def scan_langusge(target = "", source_lang = "") {
                     sh "mkdir -p $m2_home"
                     sh "cp -f /root/.m2/settings.xml $m2_home/settings.xml | true"
 
-                    def public_url = "http://${this.nexus}/repository/maven-public/"
-                    def mirror_xml = "<mirror><id>mirror</id><url>${public_url}</url><mirrorOf>central</mirrorOf></mirror>"
+                    def mirror_of = "central" // "*,!nexus-public,!nexus-releases,!nexus-snapshots"
+                    def mirror_url = "http://${this.nexus}/repository/maven-public/"
+                    def mirror_xml = "<mirror><id>mirror</id><url>${mirror_url}</url><mirrorOf>${mirror_of}</mirrorOf></mirror>"
 
-                    echo "# maven-public: $public_url"
+                    echo "# mirror_url: $mirror_url"
 
                     // replace maven-public
                     sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $m2_home/settings.xml | true"

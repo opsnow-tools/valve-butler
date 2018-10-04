@@ -75,7 +75,7 @@ def scan_langusge(target = "", source_lang = "") {
                     sh "mkdir -p $m2_home"
                     sh "cp -f /root/.m2/settings.xml $m2_home/settings.xml | true"
 
-                    def mirror_of = "central" // "*,!nexus-public,!nexus-releases,!nexus-snapshots"
+                    def mirror_of = "*,!nexus-public,!nexus-releases,!nexus-snapshots"
                     def mirror_url = "http://${this.nexus}/repository/maven-public/"
                     def mirror_xml = "<mirror><id>mirror</id><url>${mirror_url}</url><mirrorOf>${mirror_of}</mirrorOf></mirror>"
 

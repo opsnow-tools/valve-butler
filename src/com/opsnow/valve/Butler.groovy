@@ -214,7 +214,7 @@ def apply_config(type = "", name = "", namespace = "", cluster = "") {
     sh "kubectl apply -n $namespace -f $yaml"
 
     // describe secret
-    sh "kubectl describe secret $name-$namespace -n $namespace"
+    sh "kubectl describe $type $name-$namespace -n $namespace"
 }
 
 def make_chart(name = "", version = "") {

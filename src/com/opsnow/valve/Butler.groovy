@@ -332,6 +332,7 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
     env_namespace(namespace)
 
     // config (secret, configmap)
+    configmap = env_config("configmap", name, namespace)
     secret = env_config("secret", name, namespace)
 
     if (!base_domain) {
@@ -352,10 +353,10 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
                      --version $version --namespace $namespace --devel \
                      --set fullnameOverride=$name-$namespace \
                      --set ingress.basedomain=$base_domain \
+                     --set configmap.enabled=$configmap \
                      --set secret.enabled=$secret \
                      --set profile=$profile
     """
-                    //  --set configmap.enabled=$configmap \
 
     sh "helm search $name"
     sh "helm history $name-$namespace --max 5"

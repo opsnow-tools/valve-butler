@@ -27,12 +27,14 @@ def scan(name = "sample", branch = "master", source_lang = "") {
     this.source_root = "."
 
     // version
-    if (branch == "master") {
-        date = new Date().format('yyyyMMdd-HHmm')
-        version = "v0.1.1-$date"
-    } else {
-        version = "v0.0.1"
-    }
+    // if (branch == "master") {
+    //     date = new Date().format('yyyyMMdd-HHmm')
+    //     version = "v0.1.1-$date"
+    // } else {
+    //     version = "v0.0.1"
+    // }
+    date = new Date().format('yyyyMMdd-HHmm')
+    version = "v0.0.1-$date"
 
     this.version = version
     echo "# version: $version"

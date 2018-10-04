@@ -81,7 +81,7 @@ def scan_langusge(target = "", source_lang = "") {
                     echo "# maven-public: $public_url"
 
                     // replace maven-public
-                    sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $m2_home/settings.xml | true"
+                    // sh "sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $m2_home/settings.xml | true"
                 }
             }
         }

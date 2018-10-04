@@ -33,7 +33,7 @@ def scan(name = "sample", branch = "master", source_lang = "") {
     // } else {
     //     version = "v0.0.1"
     // }
-    date = new Date().format('yyyyMMdd-HHmm')
+    date = (new Date() + 9.hours).format('yyyyMMdd-HHmm')
     version = "v0.0.1-$date"
 
     this.version = version

@@ -26,15 +26,16 @@ def scan(name = "sample", branch = "master", source_lang = "") {
     this.source_lang = source_lang
     this.source_root = "."
 
+    date = (new Date()).format('yyyyMMdd-HHmm')
+
     // version
     // if (branch == "master") {
-    //     date = new Date().format('yyyyMMdd-HHmm')
     //     version = "v0.1.1-$date"
     // } else {
-    //     version = "v0.0.1"
+    //     version = "v0.0.1-$date"
     // }
-    date = (new Date()).format('yyyyMMdd-HHmm')
-    version = "v0.0.1-$date"
+
+    version = "v0.0.0-$date"
 
     this.version = version
     echo "# version: $version"

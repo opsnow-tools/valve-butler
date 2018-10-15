@@ -210,9 +210,10 @@ def apply_config(type = "", name = "", namespace = "", cluster = "", path = "") 
         if (!yaml) {
             throw new RuntimeException("yaml is null.")
         }
-
-        sh "sed -i -e \"s|name: REPLACE-ME|name: $name-$namespace|\" $yaml"
     }
+
+    // replace metadata.name
+    sh "sed -i -e \"s|name: REPLACE-ME|name: $name-$namespace|\" $yaml"
 
     // apply secret
     sh "kubectl apply -n $namespace -f $yaml"

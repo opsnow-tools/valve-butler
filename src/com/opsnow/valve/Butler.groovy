@@ -176,7 +176,7 @@ def env_config(type = "", name = "", namespace = "") {
     return "true"
 }
 
-def apply_config(type = "", name = "", namespace = "", cluster = "") {
+def apply_config(type = "", name = "", namespace = "", cluster = "", path = "") {
     if (!type) {
         throw new RuntimeException("type is null.")
     }
@@ -198,23 +198,29 @@ def apply_config(type = "", name = "", namespace = "", cluster = "") {
 
     // config yaml
     def yaml = ""
-    if (cluster) {
-        yaml = sh(script: "find . -name ${name}.yaml | grep $type/$cluster/$namespace/${name}.yaml | head -1", returnStdout: true).trim()
+    if (path) {
+        yaml = "${path}"
     } else {
-        yaml = sh(script: "find . -name ${name}.yaml | grep $type/$namespace/${name}.yaml | head -1", returnStdout: true).trim()
-    }
+        if (cluster) {
+            yaml = sh(script: "find . -name ${name}.yaml | grep $type/$cluster/$namespace/${name}.yaml | head -1", returnStdout: true).trim()
+        } else {
+            yaml = sh(script: "find . -name ${name}.yaml | grep $type/$namespace/${name}.yaml | head -1", returnStdout: true).trim()
+        }
 
-    if (!yaml) {
-        throw new RuntimeException("yaml is null.")
-    }
+        if (!yaml) {
+            throw new RuntimeException("yaml is null.")
+        }
 
-    sh "sed -i -e \"s|name: REPLACE-FULLNAME|name: $name-$namespace|\" $yaml"
+        sh "sed -i -e \"s|name: REPLACE-ME|name: $name-$namespace|\" $yaml"
+    }
 
     // apply secret
     sh "kubectl apply -n $namespace -f $yaml"
 
-    // describe secret
-    sh "kubectl describe $type $name-$namespace -n $namespace"
+    if (!path) {
+        // describe secret
+        sh "kubectl describe $type $name-$namespace -n $namespace"
+    }
 }
 
 def make_chart(name = "", version = "") {

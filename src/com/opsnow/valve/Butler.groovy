@@ -93,9 +93,11 @@ def scan_langusge(target = "", source_lang = "") {
 
 def scan_domain(target = "", namespace = "") {
     if (!target) {
+        echo "scan_domain:target is null."
         throw new RuntimeException("target is null.")
     }
     if (!namespace) {
+        echo "scan_domain:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
 
@@ -147,6 +149,7 @@ def env_cluster(cluster = "", namespace = "devops") {
 
 def env_namespace(namespace = "") {
     if (!namespace) {
+        echo "env_namespace:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
 
@@ -159,12 +162,15 @@ def env_namespace(namespace = "") {
 
 def env_config(type = "", name = "", namespace = "") {
     if (!type) {
+        echo "env_config:type is null."
         throw new RuntimeException("type is null.")
     }
     if (!name) {
+        echo "env_config:name is null."
         throw new RuntimeException("name is null.")
     }
     if (!namespace) {
+        echo "env_config:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
 
@@ -178,15 +184,19 @@ def env_config(type = "", name = "", namespace = "") {
 
 def apply_config(type = "", name = "", namespace = "", cluster = "", path = "") {
     if (!type) {
+        echo "apply_config:type is null."
         throw new RuntimeException("type is null.")
     }
     if (!name) {
+        echo "apply_config:name is null."
         throw new RuntimeException("name is null.")
     }
     if (!namespace) {
+        echo "apply_config:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
     if (!cluster) {
+        echo "apply_config:cluster is null."
         throw new RuntimeException("cluster is null.")
     }
 
@@ -226,9 +236,11 @@ def apply_config(type = "", name = "", namespace = "", cluster = "", path = "") 
 
 def make_chart(name = "", version = "") {
     if (!name) {
+        echo "make_chart:name is null."
         throw new RuntimeException("name is null.")
     }
     if (!version) {
+        echo "make_chart:version is null."
         throw new RuntimeException("version is null.")
     }
 
@@ -255,9 +267,11 @@ def make_chart(name = "", version = "") {
 
 def build_chart(name = "", version = "") {
     if (!name) {
+        echo "build_chart:name is null."
         throw new RuntimeException("name is null.")
     }
     if (!version) {
+        echo "build_chart:version is null."
         throw new RuntimeException("version is null.")
     }
 
@@ -288,9 +302,11 @@ def build_chart(name = "", version = "") {
 
 def build_image(name = "", version = "") {
     if (!name) {
+        echo "build_image:name is null."
         throw new RuntimeException("name is null.")
     }
     if (!version) {
+        echo "build_image:version is null."
         throw new RuntimeException("version is null.")
     }
 
@@ -318,12 +334,15 @@ def helm_init() {
 
 def helm_install(name = "", version = "", namespace = "", base_domain = "", cluster = "") {
     if (!name) {
+        echo "helm_install:name is null."
         throw new RuntimeException("name is null.")
     }
     if (!version) {
+        echo "helm_install:version is null."
         throw new RuntimeException("version is null.")
     }
     if (!namespace) {
+        echo "helm_install:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
 
@@ -351,6 +370,7 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
     if (version == "latest") {
         version = sh(script: "helm search chartmuseum/$name | grep $name | awk '{print \$2}'", returnStdout: true).trim()
         if (!version) {
+            echo "helm_install:version is null."
             throw new RuntimeException("version is null.")
         }
     }
@@ -371,9 +391,11 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
 
 def helm_delete(name = "", namespace = "", cluster = "") {
     if (!name) {
+        echo "helm_delete:name is null."
         throw new RuntimeException("name is null.")
     }
     if (!namespace) {
+        echo "helm_delete:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
 
@@ -399,9 +421,11 @@ def draft_init() {
 
 def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
     if (!name) {
+        echo "draft_up:name is null."
         throw new RuntimeException("name is null.")
     }
     if (!namespace) {
+        echo "draft_up:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
 
@@ -502,15 +526,15 @@ def proceed(type = "", name = "", version = "", namespace = "") {
 }
 
 def slack(color = "", title = "", message = "", footer = "") {
-    // try {
-        // if (this.slack_token) {
+    try {
+        if (this.slack_token) {
             sh """
                 curl -sL toast.sh/slack | bash -s -- \
                     --token='${this.slack_token}' \
                     --emoji=":construction_worker:" --username="valve" \
                     --color='$color' --title='$title' --footer='$footer' '$message'
             """
-        // }
-    // } catch (ignored) {
-    // }
+        }
+    } catch (ignored) {
+    }
 }

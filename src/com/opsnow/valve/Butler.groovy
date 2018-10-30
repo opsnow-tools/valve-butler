@@ -252,7 +252,7 @@ def make_chart(name = "", version = "") {
             sh "sed -i -e \"s/name: .*/name: $name/\" Chart.yaml"
             sh "sed -i -e \"s/version: .*/version: $version/\" Chart.yaml"
 
-            sh "sed -i -e \"s|tag: .*|tag: $version|\" values.yaml"
+            sh "sed -i -e \"s/tag: .*/tag: $version/g\" values.yaml"
 
             if (registry) {
                 sh "sed -i -e \"s|repository: .*|repository: $registry/$name|\" values.yaml"

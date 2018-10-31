@@ -375,6 +375,11 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         }
     }
 
+    desired = sh(script: "kubectl get deploy -n $namespace | grep \"$name \" | awk '{print \$2}'", returnStdout: true).trim()
+    if (desired == "") {
+        desired = 1
+    }
+
     sh """
         helm upgrade --install $name-$namespace chartmuseum/$name \
                      --version $version --namespace $namespace --devel \
@@ -382,6 +387,7 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
                      --set ingress.basedomain=$base_domain \
                      --set configmap.enabled=$configmap \
                      --set secret.enabled=$secret \
+                     --set replicaCount=$desired \
                      --set profile=$profile
     """
 

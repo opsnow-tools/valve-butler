@@ -154,7 +154,7 @@ def env_namespace(namespace = "") {
     }
 
     // check namespace
-    count = sh(script: "kubectl get ns $namespace 2>&1 | grep $namespace | grep Active | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get ns $namespace 2>&1 | grep Active | grep $namespace | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
         sh "kubectl create namespace $namespace"
     }
@@ -175,7 +175,7 @@ def env_config(type = "", name = "", namespace = "") {
     }
 
     // check config
-    count = sh(script: "kubectl get $type -n $namespace | grep '$name-$namespace' | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get $type -n $namespace | grep \"$name-$namespace \" | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
         return "false"
     }
@@ -368,14 +368,14 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
     helm_init()
 
     if (version == "latest") {
-        version = sh(script: "helm search chartmuseum/$name | grep $name | awk '{print \$2}'", returnStdout: true).trim()
+        version = sh(script: "helm search chartmuseum/$name | grep $name | head -1 | awk '{print \$2}'", returnStdout: true).trim()
         if (!version) {
             echo "helm_install:version is null."
             throw new RuntimeException("version is null.")
         }
     }
 
-    desired = sh(script: "kubectl get deploy -n $namespace | grep \"$name \" | awk '{print \$2}'", returnStdout: true).trim()
+    desired = sh(script: "kubectl get deploy -n $namespace | grep \"$name-$namespace \" | head -1 | awk '{print \$2}'", returnStdout: true).trim()
     if (desired == "") {
         desired = 1
     }

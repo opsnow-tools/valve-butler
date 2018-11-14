@@ -345,6 +345,14 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         echo "helm_install:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
+    if (!base_domain) {
+        echo "helm_install:base_domain is null."
+        throw new RuntimeException("base_domain is null.")
+    }
+
+    // if (!base_domain) {
+    //     base_domain = this.base_domain
+    // }
 
     profile = "$namespace"
     // if (cluster) {
@@ -360,10 +368,6 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
     // config (secret, configmap)
     configmap = env_config("configmap", name, namespace)
     secret = env_config("secret", name, namespace)
-
-    if (!base_domain) {
-        base_domain = this.base_domain
-    }
 
     helm_init()
 
@@ -434,16 +438,20 @@ def draft_up(name = "", namespace = "", base_domain = "", cluster = "") {
         echo "draft_up:namespace is null."
         throw new RuntimeException("namespace is null.")
     }
+    if (!base_domain) {
+        echo "draft_up:base_domain is null."
+        throw new RuntimeException("base_domain is null.")
+    }
+
+    // if (!base_domain) {
+    //     base_domain = this.base_domain
+    // }
 
     // cluster
     env_cluster(cluster)
 
     // namespace
     env_namespace(namespace)
-
-    if (!base_domain) {
-        base_domain = this.base_domain
-    }
 
     draft_init()
 

@@ -437,7 +437,7 @@ def mvn_sonar(source_root = "", sonarqube = "") {
             echo "mvn_sonar:sonarqube is null."
             throw new RuntimeException("sonarqube is null.")
         }
-        sonarqube = this.sonarqube
+        sonarqube = "https://${this.sonarqube}"
     }
     source_root = get_source_root(source_root)
     dir("$source_root") {

@@ -394,7 +394,7 @@ def get_source_root(source_root = "") {
 def get_m2_settings() {
     if (this.nexus) {
         settings = "-s /home/jenkins/.m2/settings.xml"
-    else {
+    } else {
         settings = ""
     }
     return settings

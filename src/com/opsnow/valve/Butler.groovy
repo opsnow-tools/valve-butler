@@ -394,7 +394,7 @@ def get_source_root(source_root = "") {
 def get_m2_settings() {
     if (this.nexus) {
         settings = "-s /home/jenkins/.m2/settings.xml"
-    else {
+    } else {
         settings = ""
     }
     return settings
@@ -447,28 +447,41 @@ def mvn_sonar(source_root = "", sonarqube = "") {
 }
 
 def failure(token = "", type = "", name = "", version = "") {
-    slack("$token", "danger", "$type Failure", "`$name`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+    slack(token, "danger", "$type Failure", "`$name`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
 }
 
 def success(token = "", type = "", name = "", version = "", namespace = "", base_domain = "", cluster = "") {
     if (cluster) {
         def link = "https://$name-$namespace.$base_domain"
-        slack("$token", "good", "$type Success", "`$name` `$version` :satellite: `$namespace` :earth_asia: `$cluster`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
+        slack(token, "good", "$type Success", "`$name` `$version` :satellite: `$namespace` :earth_asia: `$cluster`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
     } else if (base_domain) {
     def link = "https://$name-$namespace.$base_domain"
-        slack("$token", "good", "$type Success", "`$name` `$version` :satellite: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
+        slack(token, "good", "$type Success", "`$name` `$version` :satellite: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
     } else if (namespace) {
-        slack("$token", "good", "$type Success", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+        slack(token, "good", "$type Success", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
     } else {
-        slack("$token", "good", "$type Success", "`$name` `$version` :heavy_check_mark:", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+        slack(token, "good", "$type Success", "`$name` `$version` :heavy_check_mark:", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
     }
 }
 
 def proceed(token = "", type = "", name = "", version = "", namespace = "") {
-    slack("$token", "warning", "$type Proceed?", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+    slack(token, "warning", "$type Proceed?", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
 }
 
 def slack(token = "", color = "", title = "", message = "", footer = "") {
+    try {
+        if (token instanceof List) {
+            for (item in token) {
+                send(item, color, title, message, footer)
+            }
+        } else {
+            send(token, color, title, message, footer)
+        }
+    } catch (ignored) {
+    }
+}
+
+def send(token = "", color = "", title = "", message = "", footer = "") {
     try {
         sh """
             curl -sL repo.opsnow.io/valve-ctl/slack | bash -s -- --token=\'$token\' \

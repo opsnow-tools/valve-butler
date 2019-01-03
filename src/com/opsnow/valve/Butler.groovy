@@ -407,6 +407,13 @@ def npm_build(source_root = "") {
     }
 }
 
+def npm_test(source_root = "") {
+    source_root = get_source_root(source_root)
+    dir("$source_root") {
+        sh "npm run test"
+    }
+}
+
 def mvn_build(source_root = "") {
     source_root = get_source_root(source_root)
     dir("$source_root") {

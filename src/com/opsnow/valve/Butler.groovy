@@ -470,8 +470,7 @@ def proceed(token = "", type = "", name = "", version = "", namespace = "") {
 
 def slack(token = "", color = "", title = "", message = "", footer = "") {
     try {
-        boolean isList = token instanceof List
-        if (isList) {
+        if (token instanceof List) {
             for (item in token) {
                 send(item, color, title, message, footer)
             }

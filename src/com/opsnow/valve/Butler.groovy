@@ -66,7 +66,7 @@ def scan_langusge(target = "", source_lang = "") {
             this.source_root = source_root
 
             // maven mirror
-            if (source_lang == 'java') {
+            if (source_lang == "java") {
                 // replace this.version
                 // dir(source_root) {
                 //     sh "sed -i -e \"s|(<this.version>)(.*)(</this.version>)|\1${this.version}\3|\" pom.xml | true"
@@ -290,7 +290,7 @@ def helm_init() {
     """
 }
 
-def helm_install(name = "", version = "", namespace = "", base_domain = "", cluster = "") {
+def helm_install(name = "", version = "", namespace = "", base_domain = "", cluster = "", profile = "") {
     if (!name) {
         echo "helm_install:name is null."
         throw new RuntimeException("name is null.")
@@ -308,14 +308,10 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         throw new RuntimeException("base_domain is null.")
     }
 
-    // if (!base_domain) {
-    //     base_domain = this.base_domain
-    // }
-
-    profile = "$namespace"
-    // if (cluster) {
-    //     profile = "$cluster-$namespace"
-    // }
+    // profile
+    if (!profile) {
+        profile = "$namespace"
+    }
 
     // env cluster
     env_cluster(cluster)
@@ -384,57 +380,69 @@ def helm_delete(name = "", namespace = "", cluster = "") {
     sh "helm delete --purge $name-$namespace"
 }
 
-def npm_build() {
-    def source_root = this.source_root
+def get_source_root(source_root = "") {
+    if (!source_root) {
+        if (!this.source_root) {
+            source_root = "."
+        } else {
+            source_root = this.source_root
+        }
+    }
+    return source_root
+}
+
+def get_m2_settings() {
+    if (this.nexus) {
+        settings = "-s /home/jenkins/.m2/settings.xml"
+    else {
+        settings = ""
+    }
+    return settings
+}
+
+def npm_build(source_root = "") {
+    source_root = get_source_root(source_root)
     dir("$source_root") {
         sh "npm run build"
     }
 }
 
-def mvn_build() {
-    def source_root = this.source_root
+def mvn_build(source_root = "") {
+    source_root = get_source_root(source_root)
     dir("$source_root") {
-        if (this.nexus) {
-            sh "mvn package -s /home/jenkins/.m2/settings.xml -DskipTests=true"
-        } else {
-            sh "mvn package -DskipTests=true"
-        }
+        settings = get_m2_settings()
+        sh "mvn package $settings -DskipTests=true"
     }
 }
 
-def mvn_test() {
-    def source_root = this.source_root
+def mvn_test(source_root = "") {
+    source_root = get_source_root(source_root)
     dir("$source_root") {
-        if (this.nexus) {
-            sh "mvn test -s /home/jenkins/.m2/settings.xml"
-        } else {
-            sh "mvn test"
-        }
+        settings = get_m2_settings()
+        sh "mvn test $settings"
     }
 }
 
-def mvn_deploy() {
-    def source_root = this.source_root
+def mvn_deploy(source_root = "") {
+    source_root = get_source_root(source_root)
     dir("$source_root") {
-        if (this.nexus) {
-            sh "mvn deploy -s /home/jenkins/.m2/settings.xml -DskipTests=true"
-        } else {
-            sh "mvn deploy -DskipTests=true"
-        }
+        settings = get_m2_settings()
+        sh "mvn deploy $settings -DskipTests=true"
     }
 }
 
-def mvn_sonar() {
-    def sonarqube = this.sonarqube
-    if (sonarqube) {
-        def source_root = this.source_root
-        dir("$source_root") {
-            if (this.nexus) {
-                sh "mvn sonar:sonar -s /home/jenkins/.m2/settings.xml -Dsonar.host.url=https://$sonarqube -DskipTests=true"
-            } else {
-                sh "mvn sonar:sonar -Dsonar.host.url=$sonarqube -DskipTests=true"
-            }
+def mvn_sonar(source_root = "", sonarqube = "") {
+    if (!sonarqube) {
+        if (!this.sonarqube) {
+            echo "mvn_sonar:sonarqube is null."
+            throw new RuntimeException("sonarqube is null.")
         }
+        sonarqube = this.sonarqube
+    }
+    source_root = get_source_root(source_root)
+    dir("$source_root") {
+        settings = get_m2_settings()
+        sh "mvn sonar:sonar $settings -Dsonar.host.url=$sonarqube -DskipTests=true"
     }
 }
 

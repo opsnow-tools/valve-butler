@@ -447,25 +447,25 @@ def mvn_sonar(source_root = "", sonarqube = "") {
 }
 
 def failure(token = "", type = "", name = "", version = "") {
-    slack($token, "danger", "$type Failure", "`$name`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+    slack(token, "danger", "$type Failure", "`$name`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
 }
 
 def success(token = "", type = "", name = "", version = "", namespace = "", base_domain = "", cluster = "") {
     if (cluster) {
         def link = "https://$name-$namespace.$base_domain"
-        slack($token, "good", "$type Success", "`$name` `$version` :satellite: `$namespace` :earth_asia: `$cluster`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
+        slack(token, "good", "$type Success", "`$name` `$version` :satellite: `$namespace` :earth_asia: `$cluster`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
     } else if (base_domain) {
     def link = "https://$name-$namespace.$base_domain"
-        slack($token, "good", "$type Success", "`$name` `$version` :satellite: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
+        slack(token, "good", "$type Success", "`$name` `$version` :satellite: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
     } else if (namespace) {
-        slack($token, "good", "$type Success", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+        slack(token, "good", "$type Success", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
     } else {
-        slack($token, "good", "$type Success", "`$name` `$version` :heavy_check_mark:", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+        slack(token, "good", "$type Success", "`$name` `$version` :heavy_check_mark:", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
     }
 }
 
 def proceed(token = "", type = "", name = "", version = "", namespace = "") {
-    slack($token, "warning", "$type Proceed?", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+    slack(token, "warning", "$type Proceed?", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
 }
 
 def slack(token = "", color = "", title = "", message = "", footer = "") {
@@ -473,10 +473,10 @@ def slack(token = "", color = "", title = "", message = "", footer = "") {
         boolean isList = token instanceof List
         if (isList) {
             for (item in token) {
-                send($item, $color, $title, $message, $footer)
+                send(item, color, title, message, footer)
             }
         } else {
-            send($token, $color, $title, $message, $footer)
+            send(token, color, title, message, footer)
         }
     } catch (ignored) {
     }

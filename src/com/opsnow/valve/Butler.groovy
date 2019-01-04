@@ -454,6 +454,13 @@ def mvn_sonar(source_root = "", sonarqube = "") {
 }
 
 def failure(token = "", type = "", name = "", version = "") {
+    if (this.slack_token) {
+        if (token instanceof List) {
+            token.add($this.slack_token)
+        } else {
+            token = [token, $this.slack_token]
+        }
+    }
     slack(token, "danger", "$type Failure", "`$name`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
 }
 
@@ -477,12 +484,14 @@ def proceed(token = "", type = "", name = "", version = "", namespace = "") {
 
 def slack(token = "", color = "", title = "", message = "", footer = "") {
     try {
-        if (token instanceof List) {
-            for (item in token) {
-                send(item, color, title, message, footer)
+        if (token) {
+            if (token instanceof List) {
+                for (item in token) {
+                    send(item, color, title, message, footer)
+                }
+            } else {
+                send(token, color, title, message, footer)
             }
-        } else {
-            send(token, color, title, message, footer)
         }
     } catch (ignored) {
     }
@@ -490,11 +499,13 @@ def slack(token = "", color = "", title = "", message = "", footer = "") {
 
 def send(token = "", color = "", title = "", message = "", footer = "") {
     try {
-        sh """
-            curl -sL repo.opsnow.io/valve-ctl/slack | bash -s -- --token=\'$token\' \
-            --footer=\'$footer\' --footer_icon='https://jenkins.io/sites/default/files/jenkins_favicon.ico' \
-            --color=\'$color\' --title=\'$title\' \'$message\'
-        """
+        if (token) {
+            sh """
+                curl -sL repo.opsnow.io/valve-ctl/slack | bash -s -- --token=\'$token\' \
+                --footer=\'$footer\' --footer_icon='https://jenkins.io/sites/default/files/jenkins_favicon.ico' \
+                --color=\'$color\' --title=\'$title\' \'$message\'
+            """
+        }
     } catch (ignored) {
     }
 }

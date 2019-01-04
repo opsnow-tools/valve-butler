@@ -509,3 +509,5 @@ def send(token = "", color = "", title = "", message = "", footer = "") {
     } catch (ignored) {
     }
 }
+
+return this

@@ -19,21 +19,7 @@ def prepare(name = "sample", version = "") {
     this.cluster = ""
     this.namespace = ""
 
-    // groovy variables
-    sh """
-        kubectl get secret groovy-variables -n default -o json | jq -r .data.groovy | base64 -d > $home/Variables.groovy && \
-        cat $home/Variables.groovy | grep def
-    """
-
-    def val = load "$home/Variables.groovy"
-
-    this.base_domain = val.base_domain
-    this.jenkins = val.jenkins ? val.jenkins : ""
-    this.chartmuseum = val.chartmuseum ? val.chartmuseum : ""
-    this.registry = val.registry ? val.registry : ""
-    this.sonarqube = val.sonarqube ? val.sonarqube : ""
-    this.nexus = val.nexus ? val.nexus : ""
-    this.slack_token = val.slack_token ? val.slack_token : ""
+    load_variables()
 }
 
 def scan(source_lang = "") {
@@ -53,6 +39,24 @@ def scan(source_lang = "") {
 
     // chart
     make_chart()
+}
+
+def load_variables() {
+    // groovy variables
+    sh """
+        kubectl get secret groovy-variables -n default -o json | jq -r .data.groovy | base64 -d > $home/Variables.groovy && \
+        cat $home/Variables.groovy | grep def
+    """
+
+    def val = load "$home/Variables.groovy"
+
+    this.base_domain = val.base_domain
+    this.jenkins = val.jenkins ? val.jenkins : ""
+    this.chartmuseum = val.chartmuseum ? val.chartmuseum : ""
+    this.registry = val.registry ? val.registry : ""
+    this.sonarqube = val.sonarqube ? val.sonarqube : ""
+    this.nexus = val.nexus ? val.nexus : ""
+    this.slack_token = val.slack_token ? val.slack_token : ""
 }
 
 def scan_langusge(target = "", source_lang = "") {
@@ -110,6 +114,8 @@ def env_cluster(cluster = "") {
     if ("$count" == "0") {
         throw new RuntimeException("current-context is not match.")
     }
+
+    load_variables()
 }
 
 def env_namespace(namespace = "") {

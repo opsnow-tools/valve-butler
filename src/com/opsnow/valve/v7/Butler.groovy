@@ -348,7 +348,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
                      --version $version --namespace $namespace --devel \
                      --set fullnameOverride=$name-$namespace \
                      --set ingress.basedomain=$base_domain \
-                     --set ingress.subdomain=$subdomain \
+                     --set ingress.subdomain=$sub_domain \
                      --set configmap.enabled=$configmap \
                      --set secret.enabled=$secret \
                      --set replicaCount=$desired \

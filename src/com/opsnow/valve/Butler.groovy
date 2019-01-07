@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-package com.opsnow.valve.v7;
+package com.opsnow.valve;
 
 def prepare(namespace = "devops") {
     sh """

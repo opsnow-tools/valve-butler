@@ -96,6 +96,11 @@ def env_cluster(cluster = "", namespace = "devops") {
         return
     }
 
+    sh """
+        rm -rf $home/.kube &&
+        mkdir -p $home/.kube
+    """
+
     // check cluster secret
     count = sh(script: "kubectl get secret -n $namespace | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
@@ -103,7 +108,6 @@ def env_cluster(cluster = "", namespace = "devops") {
     }
 
     sh """
-        mkdir -p $home/.kube && \
         kubectl get secret kube-config-$cluster -n $namespace -o json | jq -r .data.text | base64 -d > $home/.kube/config && \
         kubectl config current-context
     """

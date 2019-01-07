@@ -98,6 +98,11 @@ def env_cluster(cluster = "") {
         return
     }
 
+    sh """
+        rm -rf $home/.kube &&
+        mkdir -p $home/.kube
+    """
+
     this.cluster = cluster
 
     // check cluster secret
@@ -107,7 +112,6 @@ def env_cluster(cluster = "") {
     }
 
     sh """
-        mkdir -p $home/.kube && \
         kubectl get secret kube-config-$cluster -n devops -o json | jq -r .data.text | base64 -d > $home/.kube/config && \
         kubectl config current-context
     """

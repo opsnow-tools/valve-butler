@@ -50,13 +50,16 @@ def load_variables() {
 
     def val = load "$home/Variables.groovy"
 
+    this.slack_token = val.slack_token
     this.base_domain = val.base_domain
-    this.jenkins = val.jenkins ? val.jenkins : ""
-    this.chartmuseum = val.chartmuseum ? val.chartmuseum : ""
-    this.registry = val.registry ? val.registry : ""
-    this.sonarqube = val.sonarqube ? val.sonarqube : ""
-    this.nexus = val.nexus ? val.nexus : ""
-    this.slack_token = val.slack_token ? val.slack_token : ""
+
+    if (val.cluster == "coruscant") {
+        this.jenkins = val.jenkins
+        this.chartmuseum = val.chartmuseum
+        this.registry = val.registry
+        this.sonarqube = val.sonarqube
+        this.nexus = val.nexus
+    }
 }
 
 def scan_langusge(target = "", source_lang = "") {

@@ -12,7 +12,12 @@ def prepare(name = "sample", version = "") {
     }
 
     this.version = version
+
+    echo "# name: $name"
     echo "# version: $version"
+
+    this.cluster = ""
+    this.namespace = ""
 
     // groovy variables
     sh """
@@ -43,10 +48,8 @@ def scan(source_lang = "") {
         scan_langusge("package.json", "nodejs")
     }
 
-    sh """
-        echo "# source_lang: $source_lang" && \
-        echo "# source_root: $source_root"
-    """
+    echo "# source_lang: $source_lang"
+    echo "# source_root: $source_root"
 
     // chart
     make_chart()

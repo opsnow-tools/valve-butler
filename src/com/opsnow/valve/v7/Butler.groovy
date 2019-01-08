@@ -34,8 +34,8 @@ def scan(source_lang = "") {
         scan_langusge("package.json", "nodejs")
     }
 
-    echo "# source_lang: $source_lang"
-    echo "# source_root: $source_root"
+    echo "# source_lang: ${this.source_lang}"
+    echo "# source_root: ${this.source_root}"
 
     // chart
     make_chart()
@@ -62,18 +62,18 @@ def load_variables() {
     }
 }
 
-def scan_langusge(target = "", source_lang = "") {
+def scan_langusge(target = "", target_lang = "") {
     def target_path = sh(script: "find . -name $target | head -1", returnStdout: true).trim()
 
     if (target_path) {
-        def source_root = sh(script: "dirname $target_path", returnStdout: true).trim()
+        def target_root = sh(script: "dirname $target_path", returnStdout: true).trim()
 
-        if (source_root) {
-            this.source_lang = source_lang
-            this.source_root = source_root
+        if (target_root) {
+            this.source_lang = target_lang
+            this.source_root = target_root
 
             // maven mirror
-            if (source_lang == "java") {
+            if (target_lang == "java") {
                 if (this.nexus) {
                     def m2_home = "/home/jenkins/.m2"
 

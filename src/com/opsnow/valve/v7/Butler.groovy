@@ -53,7 +53,7 @@ def load_variables() {
     this.slack_token = val.slack_token
     this.base_domain = val.base_domain
 
-    if (val.cluster == "coruscant") {
+    if (val.cluster == "devops") {
         this.jenkins = val.jenkins
         this.chartmuseum = val.chartmuseum
         this.registry = val.registry

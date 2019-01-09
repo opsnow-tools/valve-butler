@@ -162,52 +162,6 @@ def env_config(type = "", name = "", namespace = "") {
     return "true"
 }
 
-def apply_config(type = "", name = "", namespace = "", cluster = "", yaml = "") {
-    if (!type) {
-        echo "apply_config:type is null."
-        throw new RuntimeException("type is null.")
-    }
-    if (!name) {
-        echo "apply_config:name is null."
-        throw new RuntimeException("name is null.")
-    }
-    if (!namespace) {
-        echo "apply_config:namespace is null."
-        throw new RuntimeException("namespace is null.")
-    }
-    if (!cluster) {
-        echo "apply_config:cluster is null."
-        throw new RuntimeException("cluster is null.")
-    }
-
-    // cluster
-    env_cluster(cluster)
-
-    // namespace
-    env_namespace(namespace)
-
-    // yaml
-    if (!yaml) {
-        if (cluster) {
-            yaml = sh(script: "find . -name $name.yaml | grep $type/$cluster/$namespace/$name.yaml | head -1", returnStdout: true).trim()
-        } else {
-            yaml = sh(script: "find . -name $name.yaml | grep $type/$namespace/$name.yaml | head -1", returnStdout: true).trim()
-        }
-        if (!yaml) {
-            throw new RuntimeException("yaml is null.")
-        }
-    }
-
-    sh """
-        sed -i -e \"s|name: REPLACE-ME|name: $name-$namespace|\" $yaml && \
-        kubectl apply -n $namespace -f $yaml
-    """
-
-    if (!path) {
-        sh "kubectl describe $type $name-$namespace -n $namespace"
-    }
-}
-
 def make_chart() {
     if (!name) {
         echo "make_chart:name is null."
@@ -299,6 +253,49 @@ def helm_init() {
     sh """
         helm repo list && \
         helm repo update
+    """
+}
+
+def apply(cluster = "", namespace = "", type = "", yaml = "") {
+    if (!name) {
+        echo "apply:name is null."
+        throw new RuntimeException("name is null.")
+    }
+    if (!version) {
+        echo "apply:version is null."
+        throw new RuntimeException("version is null.")
+    }
+    if (!cluster) {
+        echo "apply:cluster is null."
+        throw new RuntimeException("cluster is null.")
+    }
+    if (!namespace) {
+        echo "apply:namespace is null."
+        throw new RuntimeException("namespace is null.")
+    }
+
+    if (!type) {
+        type = "secret"
+    }
+    if (!yaml) {
+        yaml = "$type/$cluster/$namespace/$name.yaml"
+    }
+
+    // cluster
+    env_cluster(cluster)
+
+    // namespace
+    env_namespace(namespace)
+
+    // yaml
+    yaml_path = sh(script: "find . -name $name.yaml | grep '$yaml' | head -1", returnStdout: true).trim()
+    if (!yaml_path) {
+        throw new RuntimeException("yaml_path is null.")
+    }
+
+    sh """
+        sed -i -e \"s|name: REPLACE-ME|name: $name-$namespace|\" $yaml_path && \
+        kubectl apply -n $namespace -f $yaml_path
     """
 }
 

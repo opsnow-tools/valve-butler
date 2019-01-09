@@ -8,13 +8,13 @@ def prepare(name = "sample", version = "") {
     // version
     if (!version) {
         date = (new Date()).format('yyyyMMdd-HHmm')
-        version = "v0.0.1-$date"
+        version = "v0.0.1-${date}"
     }
 
     this.version = version
 
-    echo "# name: $name"
-    echo "# version: $version"
+    echo "# name: ${name}"
+    echo "# version: ${version}"
 
     this.cluster = ""
     this.namespace = ""
@@ -44,11 +44,11 @@ def scan(source_lang = "") {
 def load_variables() {
     // groovy variables
     sh """
-        kubectl get secret groovy-variables -n default -o json | jq -r .data.groovy | base64 -d > $home/Variables.groovy && \
-        cat $home/Variables.groovy | grep def
+        kubectl get secret groovy-variables -n default -o json | jq -r .data.groovy | base64 -d > ${home}/Variables.groovy && \
+        cat ${home}/Variables.groovy | grep def
     """
 
-    def val = load "$home/Variables.groovy"
+    def val = load "${home}/Variables.groovy"
 
     this.slack_token = val.slack_token
     this.base_domain = val.base_domain
@@ -63,10 +63,10 @@ def load_variables() {
 }
 
 def scan_langusge(target = "", target_lang = "") {
-    def target_path = sh(script: "find . -name $target | head -1", returnStdout: true).trim()
+    def target_path = sh(script: "find . -name ${target} | head -1", returnStdout: true).trim()
 
     if (target_path) {
-        def target_root = sh(script: "dirname $target_path", returnStdout: true).trim()
+        def target_root = sh(script: "dirname ${target_path}", returnStdout: true).trim()
 
         if (target_root) {
             this.source_lang = target_lang
@@ -78,13 +78,13 @@ def scan_langusge(target = "", target_lang = "") {
                     def m2_home = "/home/jenkins/.m2"
 
                     def mirror_of  = "*,!nexus-public,!nexus-releases,!nexus-snapshots"
-                    def mirror_url = "https://$nexus/repository/maven-public/"
+                    def mirror_url = "https://${nexus}/repository/maven-public/"
                     def mirror_xml = "<mirror><id>mirror</id><url>${mirror_url}</url><mirrorOf>${mirror_of}</mirrorOf></mirror>"
 
                     sh """
-                        mkdir -p $m2_home && \
-                        cp -f /root/.m2/settings.xml $m2_home/settings.xml && \
-                        sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" $m2_home/settings.xml
+                        mkdir -p ${m2_home} && \
+                        cp -f /root/.m2/settings.xml ${m2_home}/settings.xml && \
+                        sed -i -e \"s|<!-- ### configured mirrors ### -->|${mirror_xml}|\" ${m2_home}/settings.xml
                     """
                 }
             }
@@ -99,27 +99,27 @@ def env_cluster(cluster = "") {
     }
 
     sh """
-        rm -rf $home/.kube &&
-        mkdir -p $home/.kube
+        rm -rf ${home}/.kube &&
+        mkdir -p ${home}/.kube
     """
 
     this.cluster = cluster
 
     // check cluster secret
-    count = sh(script: "kubectl get secret -n devops | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
-    if ("$count" == "0") {
+    count = sh(script: "kubectl get secret -n devops | grep 'kube-config-${cluster}' | wc -l", returnStdout: true).trim()
+    if ("${count}" == "0") {
         echo "env_cluster:cluster is null."
         throw new RuntimeException("cluster is null.")
     }
 
     sh """
-        kubectl get secret kube-config-$cluster -n devops -o json | jq -r .data.text | base64 -d > $home/.kube/config && \
+        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.text | base64 -d > ${home}/.kube/config && \
         kubectl config current-context
     """
 
     // check current context
-    count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()
-    if ("$count" == "0") {
+    count = sh(script: "kubectl config current-context | grep '${cluster}' | wc -l", returnStdout: true).trim()
+    if ("${count}" == "0") {
         echo "env_cluster:current-context is not match."
         throw new RuntimeException("current-context is not match.")
     }
@@ -136,9 +136,9 @@ def env_namespace(namespace = "") {
     this.namespace = namespace
 
     // check namespace
-    count = sh(script: "kubectl get ns $namespace 2>&1 | grep Active | grep $namespace | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get ns ${namespace} 2>&1 | grep Active | grep ${namespace} | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
-        sh "kubectl create namespace $namespace"
+        sh "kubectl create namespace ${namespace}"
     }
 }
 
@@ -157,7 +157,7 @@ def env_config(type = "", name = "", namespace = "") {
     }
 
     // check config
-    count = sh(script: "kubectl get $type -n $namespace | grep \"$name-$namespace \" | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get ${type} -n ${namespace} | grep ${name}-${namespace} | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
         return "false"
     }
@@ -174,19 +174,19 @@ def make_chart() {
         throw new RuntimeException("version is null.")
     }
 
-    if (!fileExists("charts/$name")) {
+    if (!fileExists("charts/${name}")) {
         return
     }
 
-    dir("charts/$name") {
+    dir("charts/${name}") {
         sh """
-            sed -i -e \"s/name: .*/name: $name/\" Chart.yaml && \
-            sed -i -e \"s/version: .*/version: $version/\" Chart.yaml && \
-            sed -i -e \"s/tag: .*/tag: $version/g\" values.yaml
+            sed -i -e \"s/name: .*/name: ${name}/\" Chart.yaml && \
+            sed -i -e \"s/version: .*/version: ${version}/\" Chart.yaml && \
+            sed -i -e \"s/tag: .*/tag: ${version}/g\" values.yaml
         """
 
         if (registry) {
-            sh "sed -i -e \"s|repository: .*|repository: $registry/$name|\" values.yaml"
+            sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
         }
     }
 }
@@ -205,7 +205,7 @@ def build_chart() {
 
     // helm plugin
     count = sh(script: "helm plugin list | grep 'Push chart package' | wc -l", returnStdout: true).trim()
-    if ("$count" == "0") {
+    if ("${count}" == "0") {
         sh """
             helm plugin install https://github.com/chartmuseum/helm-push && \
             helm plugin list
@@ -213,7 +213,7 @@ def build_chart() {
     }
 
     // helm push
-    dir("charts/$name") {
+    dir("charts/${name}") {
         sh "helm lint ."
 
         if (chartmuseum) {
@@ -224,7 +224,7 @@ def build_chart() {
     // helm repo
     sh """
         helm repo update && \
-        helm search $name
+        helm search ${name}
     """
 }
 
@@ -238,8 +238,8 @@ def build_image() {
         throw new RuntimeException("version is null.")
     }
 
-    sh "docker build -t $registry/$name:$version ."
-    sh "docker push $registry/$name:$version"
+    sh "docker build -t ${registry}/${name}:${version} ."
+    sh "docker push ${registry}/${name}:${version}"
 }
 
 def helm_init() {
@@ -249,7 +249,7 @@ def helm_init() {
     """
 
     if (chartmuseum) {
-        sh "helm repo add chartmuseum https://$chartmuseum"
+        sh "helm repo add chartmuseum https://${chartmuseum}"
     }
 
     sh """
@@ -280,18 +280,18 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
         type = "secret"
     }
     if (!yaml) {
-        yaml = "$type/$cluster/$namespace/$name.yaml"
+        yaml = "${type}/${cluster}/${namespace}/${name}.yaml"
     }
 
     // yaml
-    yaml_path = sh(script: "find . -name $name.yaml | grep '$yaml' | head -1", returnStdout: true).trim()
+    yaml_path = sh(script: "find . -name ${name}.yaml | grep '${yaml}' | head -1", returnStdout: true).trim()
     if (!yaml_path) {
         echo "apply:yaml_path is null."
         throw new RuntimeException("yaml_path is null.")
     }
 
     sh """
-        sed -i -e \"s|name: REPLACE-ME|name: $name-$namespace|\" $yaml_path
+        sed -i -e \"s|name: REPLACE-ME|name: ${name}-${namespace}|\" ${yaml_path}
     """
 
     // cluster
@@ -301,7 +301,7 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
     env_namespace(namespace)
 
     sh """
-        kubectl apply -n $namespace -f $yaml_path
+        kubectl apply -n ${namespace} -f ${yaml_path}
     """
 }
 
@@ -323,7 +323,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         throw new RuntimeException("namespace is null.")
     }
     if (!sub_domain) {
-        sub_domain = "$name-$namespace"
+        sub_domain = "${name}-${namespace}"
     }
     if (!profile) {
         profile = namespace
@@ -345,26 +345,26 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     secret = env_config("secret", name, namespace)
 
     // latest pod count
-    desired = sh(script: "kubectl get deploy -n $namespace | grep \"$name-$namespace \" | head -1 | awk '{print \$2}'", returnStdout: true).trim()
+    desired = sh(script: "kubectl get deploy -n ${namespace} | grep \"${name}-${namespace} \" | head -1 | awk '{print \$2}'", returnStdout: true).trim()
     if (desired == "") {
         desired = 1
     }
 
     sh """
-        helm upgrade --install $name-$namespace chartmuseum/$name \
-                     --version $version --namespace $namespace --devel \
-                     --set fullnameOverride=$name-$namespace \
-                     --set ingress.basedomain=$base_domain \
-                     --set ingress.subdomain=$sub_domain \
-                     --set configmap.enabled=$configmap \
-                     --set secret.enabled=$secret \
-                     --set replicaCount=$desired \
-                     --set profile=$profile
+        helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
+                     --version ${version} --namespace ${namespace} --devel \
+                     --set fullnameOverride=${name}-${namespace} \
+                     --set ingress.basedomain=${base_domain} \
+                     --set ingress.subdomain=${sub_domain} \
+                     --set configmap.enabled=${configmap} \
+                     --set secret.enabled=${secret} \
+                     --set replicaCount=${desired} \
+                     --set profile=${profile}
     """
 
     sh """
-        helm search $name && \
-        helm history $name-$namespace --max 10
+        helm search ${name} && \
+        helm history ${name}-${namespace} --max 10
     """
 }
 
@@ -389,11 +389,11 @@ def remove(cluster = "", namespace = "") {
     helm_init()
 
     sh """
-        helm search $name && \
-        helm history $name-$namespace --max 10
+        helm search ${name} && \
+        helm history ${name}-${namespace} --max 10
     """
 
-    sh "helm delete --purge $name-$namespace"
+    sh "helm delete --purge ${name}-${namespace}"
 }
 
 def get_source_root(source_root = "") {
@@ -418,39 +418,39 @@ def get_m2_settings() {
 
 def npm_build(source_root = "") {
     source_root = get_source_root(source_root)
-    dir("$source_root") {
+    dir("${source_root}") {
         sh "npm run build"
     }
 }
 
 def npm_test(source_root = "") {
     source_root = get_source_root(source_root)
-    dir("$source_root") {
+    dir("${source_root}") {
         sh "npm run test"
     }
 }
 
 def mvn_build(source_root = "") {
     source_root = get_source_root(source_root)
-    dir("$source_root") {
+    dir("${source_root}") {
         settings = get_m2_settings()
-        sh "mvn package $settings -DskipTests=true"
+        sh "mvn package ${settings} -DskipTests=true"
     }
 }
 
 def mvn_test(source_root = "") {
     source_root = get_source_root(source_root)
-    dir("$source_root") {
+    dir("${source_root}") {
         settings = get_m2_settings()
-        sh "mvn test $settings"
+        sh "mvn test ${settings}"
     }
 }
 
 def mvn_deploy(source_root = "") {
     source_root = get_source_root(source_root)
-    dir("$source_root") {
+    dir("${source_root}") {
         settings = get_m2_settings()
-        sh "mvn deploy $settings -DskipTests=true"
+        sh "mvn deploy ${settings} -DskipTests=true"
     }
 }
 
@@ -463,9 +463,9 @@ def mvn_sonar(source_root = "", sonarqube = "") {
         sonarqube = "https://${this.sonarqube}"
     }
     source_root = get_source_root(source_root)
-    dir("$source_root") {
+    dir("${source_root}") {
         settings = get_m2_settings()
-        sh "mvn sonar:sonar $settings -Dsonar.host.url=$sonarqube -DskipTests=true"
+        sh "mvn sonar:sonar ${settings} -Dsonar.host.url=${sonarqube} -DskipTests=true"
     }
 }
 
@@ -483,7 +483,7 @@ def failure(token = "", type = "") {
             token = [token, slack_token]
         }
     }
-    slack(token, "danger", "$type Failure", "`$name` `$version`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+    slack(token, "danger", "${type} Failure", "`${name}` `${version}`", "${JOB_NAME} <${RUN_DISPLAY_URL}|#${BUILD_NUMBER}>")
 }
 
 def success(token = "", type = "") {
@@ -496,10 +496,10 @@ def success(token = "", type = "") {
         throw new RuntimeException("version is null.")
     }
     if (cluster) {
-        def link = "https://$sub_domain.$base_domain"
-        slack(token, "good", "$type Success", "`$name` `$version` :satellite: `$namespace` :earth_asia: `$cluster`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER> : <$link|$name-$namespace>")
+        def link = "https://${sub_domain}.${base_domain}"
+        slack(token, "good", "${type} Success", "`${name}` `${version}` :satellite: `${namespace}` :earth_asia: `${cluster}`", "${JOB_NAME} <${RUN_DISPLAY_URL}|#${BUILD_NUMBER}> : <${link}|${name}-${namespace}>")
     } else {
-        slack(token, "good", "$type Success", "`$name` `$version` :heavy_check_mark:", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+        slack(token, "good", "${type} Success", "`${name}` `${version}` :heavy_check_mark:", "${JOB_NAME} <${RUN_DISPLAY_URL}|#${BUILD_NUMBER}>")
     }
 }
 
@@ -512,7 +512,7 @@ def proceed(token = "", type = "", namespace = "") {
         echo "proceed:version is null."
         throw new RuntimeException("version is null.")
     }
-    slack(token, "warning", "$type Proceed?", "`$name` `$version` :rocket: `$namespace`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
+    slack(token, "warning", "${type} Proceed?", "`${name}` `${version}` :rocket: `${namespace}`", "${JOB_NAME} <${RUN_DISPLAY_URL}|#${BUILD_NUMBER}>")
 }
 
 def slack(token = "", color = "", title = "", message = "", footer = "") {
@@ -534,9 +534,9 @@ def send(token = "", color = "", title = "", message = "", footer = "") {
     try {
         if (token) {
             sh """
-                curl -sL repo.opsnow.io/valve-ctl/slack | bash -s -- --token=\'$token\' \
+                curl -sL repo.opsnow.io/valve-ctl/slack | bash -s -- --token=\'${token}\' \
                 --footer=\'$footer\' --footer_icon='https://jenkins.io/sites/default/files/jenkins_favicon.ico' \
-                --color=\'$color\' --title=\'$title\' \'$message\'
+                --color=\'${color}\' --title=\'${title}\' \'${message}\'
             """
         }
     } catch (ignored) {

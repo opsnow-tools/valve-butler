@@ -370,10 +370,11 @@ def deploy_prd(cluster = "", namespace = "", sub_domain = "", profile = "") {
         echo "deploy:name is null."
         throw new RuntimeException("name is null.")
     }
-    if (!version) {
-        echo "deploy:version is null."
-        throw new RuntimeException("version is null.")
-    }
+    // Must select one in exist versions
+//    if (!version) {
+//        echo "deploy:version is null."
+//        throw new RuntimeException("version is null.")
+//    }
     if (!cluster) {
         echo "deploy:cluster is null."
         throw new RuntimeException("cluster is null.")
@@ -410,11 +411,14 @@ def deploy_prd(cluster = "", namespace = "", sub_domain = "", profile = "") {
         desired = 1
     }
 
+    // latest $name version
+    release_version = sh(script: "helm search chartmuseum/$name | grep \"$name \" | head -1 | awk '{print \$2}'", returnStdout: true).trim()
+
     sh """
         helm ls
-        helm search chartmuseum
+        helm search chartmuseum/$name
         helm upgrade --install $name-$namespace chartmuseum/$name \
-                     --version $version --namespace $namespace --devel \
+                     --version $release_version --namespace $namespace --devel \
                      --set fullnameOverride=$name-$namespace \
                      --set ingress.basedomain=$base_domain \
                      --set ingress.subdomain=$sub_domain \

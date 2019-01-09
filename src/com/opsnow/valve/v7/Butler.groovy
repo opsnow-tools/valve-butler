@@ -350,12 +350,12 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         version = sh(script: "helm search chartmuseum/${name} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
         if (!version) {
             echo "deploy:latest version is null."
-            throw new RuntimeException("version is null.")
+            throw new RuntimeException("latest version is null.")
         }
     }
 
     // latest pod count
-    desired = sh(script: "kubectl get deploy -n ${namespace} | grep \"${name}-${namespace} \" | head -1 | awk '{print \$2}'", returnStdout: true).trim()
+    desired = sh(script: "kubectl get deploy -n ${namespace} | grep ${name}-${namespace} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
     if (desired == "") {
         desired = 1
     }

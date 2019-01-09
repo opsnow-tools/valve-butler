@@ -18,6 +18,7 @@ def prepare(name = "sample", version = "") {
 
     this.cluster = ""
     this.namespace = ""
+    this.sub_domain = ""
 
     load_variables()
 }

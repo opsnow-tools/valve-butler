@@ -413,10 +413,11 @@ def deploy_prd(cluster = "", namespace = "", sub_domain = "", profile = "") {
 
     // latest $name version
     release_version = sh(script: "helm search chartmuseum/$name | grep \"$name \" | head -1 | awk '{print \$2}'", returnStdout: true).trim()
+    if (release_version == "") {
+      release_version = "latest"
+    }
 
     sh """
-        helm ls
-        helm search chartmuseum/$name
         helm upgrade --install $name-$namespace chartmuseum/$name \
                      --version $release_version --namespace $namespace --devel \
                      --set fullnameOverride=$name-$namespace \

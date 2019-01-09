@@ -345,6 +345,15 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     configmap = env_config("configmap", name, namespace)
     secret = env_config("secret", name, namespace)
 
+    // latest version
+    if (version == "latest") {
+        version = sh(script: "helm search chartmuseum/${name} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
+        if (!version) {
+            echo "deploy:latest version is null."
+            throw new RuntimeException("version is null.")
+        }
+    }
+
     // latest pod count
     desired = sh(script: "kubectl get deploy -n ${namespace} | grep \"${name}-${namespace} \" | head -1 | awk '{print \$2}'", returnStdout: true).trim()
     if (desired == "") {

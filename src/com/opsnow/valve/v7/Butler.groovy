@@ -18,6 +18,7 @@ def prepare(name = "sample", version = "") {
 
     this.cluster = ""
     this.namespace = ""
+    this.sub_domain = ""
 
     load_variables()
 }
@@ -495,7 +496,7 @@ def success(token = "", type = "") {
         echo "failure:version is null."
         throw new RuntimeException("version is null.")
     }
-    if (cluster) {
+    if (cluster && sub_domain) {
         def link = "https://${sub_domain}.${base_domain}"
         slack(token, "good", "${type} Success", "`${name}` `${version}` :satellite: `${namespace}` :earth_asia: `${cluster}`", "${JOB_NAME} <${RUN_DISPLAY_URL}|#${BUILD_NUMBER}> : <${link}|${name}-${namespace}>")
     } else {

@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-package com.opsnow.valve.v7.1;
+package com.opsnow.valve.v8;
 
 def prepare(name = "sample", version = "") {
     // image name

@@ -108,6 +108,7 @@ def env_cluster(cluster = "") {
     // check cluster secret
     count = sh(script: "kubectl get secret -n devops | grep 'kube-config-$cluster' | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
+        echo "env_cluster:cluster is null."
         throw new RuntimeException("cluster is null.")
     }
 
@@ -119,6 +120,7 @@ def env_cluster(cluster = "") {
     // check current context
     count = sh(script: "kubectl config current-context | grep '$cluster' | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
+        echo "env_cluster:current-context is not match."
         throw new RuntimeException("current-context is not match.")
     }
 
@@ -281,20 +283,24 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
         yaml = "$type/$cluster/$namespace/$name.yaml"
     }
 
+    // yaml
+    yaml_path = sh(script: "find . -name $name.yaml | grep '$yaml' | head -1", returnStdout: true).trim()
+    if (!yaml_path) {
+        echo "apply:yaml_path is null."
+        throw new RuntimeException("yaml_path is null.")
+    }
+
+    sh """
+        sed -i -e \"s|name: REPLACE-ME|name: $name-$namespace|\" $yaml_path
+    """
+
     // cluster
     env_cluster(cluster)
 
     // namespace
     env_namespace(namespace)
 
-    // yaml
-    yaml_path = sh(script: "find . -name $name.yaml | grep '$yaml' | head -1", returnStdout: true).trim()
-    if (!yaml_path) {
-        throw new RuntimeException("yaml_path is null.")
-    }
-
     sh """
-        sed -i -e \"s|name: REPLACE-ME|name: $name-$namespace|\" $yaml_path && \
         kubectl apply -n $namespace -f $yaml_path
     """
 }

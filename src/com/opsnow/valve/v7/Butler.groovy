@@ -378,6 +378,37 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     """
 }
 
+def rollback(cluster = "", namespace = "", revision = "") {
+    if (!name) {
+        echo "remove:name is null."
+        throw new RuntimeException("name is null.")
+    }
+    if (!cluster) {
+        echo "remove:cluster is null."
+        throw new RuntimeException("cluster is null.")
+    }
+    if (!namespace) {
+        echo "remove:namespace is null."
+        throw new RuntimeException("namespace is null.")
+    }
+    if (!revision) {
+        revision = "0"
+    }
+
+    // env cluster
+    env_cluster(cluster)
+
+    // helm init
+    helm_init()
+
+    sh """
+        helm search ${name} && \
+        helm history ${name}-${namespace} --max 10
+    """
+
+    sh "helm rollback ${name}-${namespace} ${revision}"
+}
+
 def remove(cluster = "", namespace = "") {
     if (!name) {
         echo "remove:name is null."

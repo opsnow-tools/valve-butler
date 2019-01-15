@@ -42,17 +42,6 @@ def scan(source_lang = "") {
     make_chart()
 }
 
-def scan_helm(cluster = "", namespace = "") {
-
-    env_cluster(cluster)
-    sh """
-      helm ls
-      """
-    list = sh(script: "helm ls --namespace ${namespace} | grep '${namespace}' | awk '{print \$1}'", returnStdout: true).trim()
-
-    echo "scan helm : ${list}"
-}
-
 def load_variables() {
     // groovy variables
     sh """
@@ -387,6 +376,17 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         helm search ${name} && \
         helm history ${name}-${namespace} --max 10
     """
+}
+
+def scan_helm(cluster = "", namespace = "") {
+
+    env_cluster(cluster)
+    sh """
+      helm ls
+      """
+    list = sh(script: "helm ls --namespace ${namespace} | grep '${namespace}' | awk '{print \$1}'", returnStdout: true).trim()
+
+    echo "scan helm : ${list}"
 }
 
 def rollback(cluster = "", namespace = "", revision = "") {

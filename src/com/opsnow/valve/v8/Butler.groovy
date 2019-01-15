@@ -384,8 +384,12 @@ def scan_helm(cluster = "") {
     namespace_list
 }
 
-def scan_helm_namespace(namespace = "") {
-    list = sh(script: "helm ls --namespace ${namespace} | grep '${namespace}' | awk '{print \$1}'", returnStdout: true).trim()
+def scan_helm_namespace(namespace = "", cluster = "") {
+    if (cluster != "") {
+      env_cluster(cluster)
+    }
+    //list = sh(script: "helm ls --namespace ${namespace} | grep '${namespace}' | awk '{print \$1}'", returnStdout: true).trim()
+    list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
     list
 }
 

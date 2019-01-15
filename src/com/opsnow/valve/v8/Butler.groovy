@@ -390,7 +390,7 @@ def scan_helm_namespace(namespace = "") {
 
     list = sh(script: "helm ls --namespace ${namespace} | grep '${namespace}' | awk '{print \$1}'", returnStdout: true).trim()
 
-    ${list}
+    list
 }
 
 def rollback(cluster = "", namespace = "", revision = "") {

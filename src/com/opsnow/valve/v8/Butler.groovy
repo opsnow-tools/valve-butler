@@ -379,16 +379,13 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
 }
 
 def scan_helm(cluster = "") {
-
     env_cluster(cluster)
-    namespace_list = sh(script: "helm ls | awk '{print \$7}'", returnStdout: true).trim()
+    namespace_list = sh(script: "helm ls | awk '{print \$11}'", returnStdout: true).trim()
     namespace_list
 }
 
 def scan_helm_namespace(namespace = "") {
-
     list = sh(script: "helm ls --namespace ${namespace} | grep '${namespace}' | awk '{print \$1}'", returnStdout: true).trim()
-
     list
 }
 

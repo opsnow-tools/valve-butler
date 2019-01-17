@@ -378,6 +378,16 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     """
 }
 
+def scan_helm(cluster = "") {
+    if (!cluster) {
+        echo "remove:cluster is null."
+        throw new RuntimeException("cluster is null.")
+    }
+    env_cluster(cluster)
+    list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
+    list
+}
+
 def rollback(cluster = "", namespace = "", revision = "") {
     if (!name) {
         echo "remove:name is null."

@@ -357,7 +357,13 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     // latest pod count
     desired = sh(script: "kubectl get deploy -n ${namespace} | grep ${name}-${namespace} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
     if (desired == "") {
-        desired = 1
+        desired = 2
+    }
+
+    // hpa min value
+    hpa_min = 2
+    if (cluster == "dev") {
+        hpa_min = 1
     }
 
     sh """
@@ -369,6 +375,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
                      --set configmap.enabled=${configmap} \
                      --set secret.enabled=${secret} \
                      --set replicaCount=${desired} \
+                     --set hpa.min=${hpa_min} \
                      --set profile=${profile}
     """
 

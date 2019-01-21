@@ -379,11 +379,15 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
 }
 
 def scan_helm(cluster = "", namespace = "") {
+    // must have cluster
     if (!cluster) {
         echo "remove:cluster is null."
         throw new RuntimeException("cluster is null.")
     }
     env_cluster(cluster)
+
+    // admin can scan all images,
+    // others can scan own images.
     if (!namespace) {
       list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
     } else {

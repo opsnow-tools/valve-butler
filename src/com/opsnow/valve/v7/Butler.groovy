@@ -378,13 +378,17 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     """
 }
 
-def scan_helm(cluster = "") {
+def scan_helm(cluster = "", namespace = "") {
     if (!cluster) {
         echo "remove:cluster is null."
         throw new RuntimeException("cluster is null.")
     }
     env_cluster(cluster)
-    list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
+    if (!namespace) {
+      list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
+    } else {
+      list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
+    }
     list
 }
 

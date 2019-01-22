@@ -367,7 +367,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     }
 
     sh """
-        helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
+        helm install ${name}-${namespace} chartmuseum/${name} \
                      --version ${version} --namespace ${namespace} --devel \
                      --set fullnameOverride=${name}-${namespace} \
                      --set ingress.basedomain=${base_domain} \

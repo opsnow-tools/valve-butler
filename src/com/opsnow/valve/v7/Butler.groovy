@@ -101,7 +101,7 @@ def env_cluster(cluster = "") {
     }
 
     sh """
-        mkdir -p ${home}/.kube
+        rm -rf ${home}/.kube && mkdir -p ${home}/.kube
     """
 
     this.cluster = cluster

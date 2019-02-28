@@ -20,6 +20,7 @@ def prepare(name = "sample", version = "") {
     this.namespace = ""
     this.sub_domain = ""
 
+    // this cluster
     load_variables()
 }
 
@@ -100,7 +101,6 @@ def env_cluster(cluster = "") {
     }
 
     sh """
-        rm -rf ${home}/.kube &&
         mkdir -p ${home}/.kube
     """
 
@@ -114,8 +114,7 @@ def env_cluster(cluster = "") {
     }
 
     sh """
-        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.text | base64 -d > ${home}/.kube/config && \
-        kubectl config current-context
+        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.text | base64 -d > ${home}/.kube/config
     """
 
     // check current context
@@ -125,6 +124,7 @@ def env_cluster(cluster = "") {
         throw new RuntimeException("current-context is not match.")
     }
 
+    // target cluster
     load_variables()
 }
 

@@ -2,6 +2,8 @@
 package com.opsnow.valve;
 
 def prepare(namespace = "devops") {
+    throw new RuntimeException("This valve-butler is too old.")
+
     sh """
         kubectl get secret groovy-variables -n $namespace -o json | jq -r .data.groovy | base64 -d > $home/Variables.groovy && \
         cat $home/Variables.groovy | grep def

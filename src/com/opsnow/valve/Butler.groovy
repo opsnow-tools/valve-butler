@@ -5,9 +5,11 @@ def old_version() {
     // throw new RuntimeException("This valve-butler is too old.")
 
     echo "###################################################"
+    echo "###################################################"
     echo " "
-    echo " This valve-butler is too old."
+    echo "##        This valve-butler is too old.        ##"
     echo " "
+    echo "###################################################"
     echo "###################################################"
 }
 

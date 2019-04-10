@@ -376,6 +376,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
                      --set secret.enabled=${secret} \
                      --set replicaCount=${desired} \
                      --set hpa.min=${hpa_min} \
+                     --set namespace=${namespace} \
                      --set profile=${profile}
     """
 

@@ -404,6 +404,11 @@ def scan_helm(cluster = "", namespace = "") {
     list
 }
 
+def scan_charts() {
+      list = sh(script: "curl https://chartmuseum-devops.coruscant.opsnow.com/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
+      list
+}
+
 def rollback(cluster = "", namespace = "", revision = "") {
     if (!name) {
         echo "remove:name is null."

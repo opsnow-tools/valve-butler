@@ -409,6 +409,12 @@ def scan_charts(url = "chartmuseum-devops.coruscant.opsnow.com") {
       list
 }
 
+def scan_charts_version(url = "chartmuseum-devops.coruscant.opsnow.com", mychart = "") {
+      list = sh(script: "curl https://${url}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
+      list
+}
+
+
 def rollback(cluster = "", namespace = "", revision = "") {
     if (!name) {
         echo "remove:name is null."

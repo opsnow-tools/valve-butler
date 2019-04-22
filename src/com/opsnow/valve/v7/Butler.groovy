@@ -404,8 +404,8 @@ def scan_helm(cluster = "", namespace = "") {
     list
 }
 
-def scan_charts() {
-      list = sh(script: "curl https://chartmuseum-devops.coruscant.opsnow.com/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
+def scan_charts(url = "chartmuseum-devops.coruscant.opsnow.com") {
+      list = sh(script: "curl https://${url}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
       list
 }
 

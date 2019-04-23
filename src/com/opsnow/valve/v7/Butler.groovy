@@ -405,12 +405,17 @@ def scan_helm(cluster = "", namespace = "") {
 }
 
 def scan_charts() {
-      echo "${chartmuseum}"
+      if (!chartmuseum) {
+        load_variables()
+      }
       list = sh(script: "curl https://${chartmuseum}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
       list
 }
 
 def scan_charts_version(mychart = "") {
+      if (!chartmuseum) {
+        load_variables()
+      }
       list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
       list
 }

@@ -404,13 +404,13 @@ def scan_helm(cluster = "", namespace = "") {
     list
 }
 
-def scan_charts(url = "chartmuseum.opsnow.com") {
-      list = sh(script: "curl https://${url}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
+def scan_charts() {
+      list = sh(script: "curl https://${chartmuseum}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
       list
 }
 
-def scan_charts_version(url = "chartmuseum.opsnow.com", mychart = "") {
-      list = sh(script: "curl https://${url}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
+def scan_charts_version(mychart = "") {
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
       list
 }
 

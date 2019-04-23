@@ -405,6 +405,7 @@ def scan_helm(cluster = "", namespace = "") {
 }
 
 def scan_charts() {
+      echo "${chartmuseum}"
       list = sh(script: "curl https://${chartmuseum}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
       list
 }

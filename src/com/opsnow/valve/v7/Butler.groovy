@@ -405,8 +405,6 @@ def scan_helm(cluster = "", namespace = "") {
 }
 
 def scan_charts() {
-
-      echo "chartmuseum : ${chartmuseum}"
       if (!chartmuseum) {
         load_variables()
       }

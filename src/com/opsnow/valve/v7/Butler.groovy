@@ -390,12 +390,14 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
 
     if (values_path) {
 
+        // helm install
         sh """
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
                         --version ${version} --namespace ${namespace} --devel \
                         --set replicaCount=${desired} \
                         --values ${values_path}
         """
+
     } else {
 
         // hpa min value
@@ -404,6 +406,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
             hpa_min = 1
         }
 
+        // helm install
         sh """
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
                         --version ${version} --namespace ${namespace} --devel \

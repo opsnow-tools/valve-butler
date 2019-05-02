@@ -8,6 +8,7 @@ def debug() {
         ls -al ~/.jenkins
         ls -al ~/agent
         ls -al ~/workspace
+        ls -al ~/workspace/now.com_alertnow-consumer_master
     """
 }
 

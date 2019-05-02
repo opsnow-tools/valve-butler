@@ -383,7 +383,9 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     values_path = ""
     if (!this.site) {
         values_path = "${this.site}/${name}/${namespace}.yaml"
-        if (!fileExists("${values_path}")) {
+        if (fileExists("${values_path}")) {
+            echo "deploy:site found ${values_path}."
+        } else {
             echo "deploy:site not found ${values_path}."
             values_path = ""
         }

@@ -1,6 +1,13 @@
 #!/usr/bin/groovy
 package com.opsnow.valve.v7;
 
+def debug() {
+    sh """
+        ls -al
+        ls -al ~
+    """
+}
+
 def prepare(name = "sample", version = "") {
     // image name
     this.name = name

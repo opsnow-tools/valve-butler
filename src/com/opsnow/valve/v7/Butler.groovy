@@ -5,10 +5,6 @@ def debug() {
     sh """
         ls -al
         ls -al ~
-        ls -al ~/.jenkins
-        ls -al ~/agent
-        ls -al ~/workspace
-        ls -al ~/workspace/now.com_alertnow-consumer_master
     """
 }
 
@@ -16,6 +12,19 @@ def prepare(name = "sample", version = "") {
     // image name
     this.name = name
 
+    echo "# name: ${name}"
+
+    set_version(version)
+
+    this.cluster = ""
+    this.namespace = ""
+    this.sub_domain = ""
+
+    // this cluster
+    load_variables()
+}
+
+def set_version(version = "") {
     // version
     if (!version) {
         date = (new Date()).format('yyyyMMdd-HHmm')
@@ -24,15 +33,7 @@ def prepare(name = "sample", version = "") {
 
     this.version = version
 
-    echo "# name: ${name}"
     echo "# version: ${version}"
-
-    this.cluster = ""
-    this.namespace = ""
-    this.sub_domain = ""
-
-    // this cluster
-    load_variables()
 }
 
 def scan(source_lang = "") {

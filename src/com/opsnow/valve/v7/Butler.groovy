@@ -382,11 +382,11 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     // values_path
     values_path = ""
     if (!this.site) {
-        values_path = "${this.site}/${name}/${namespace}.yaml"
-        if (fileExists("${values_path}")) {
-            echo "deploy:site ${values_path}."
-        } else {
+        count = sh(script: "ls ${this.site}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
+        if ("${count}" == "0") {
             throw new RuntimeException("values_path not found.")
+        } else {
+            values_path = "${this.site}/${name}/${namespace}.yaml"
         }
     }
 

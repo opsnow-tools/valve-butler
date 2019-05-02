@@ -39,6 +39,8 @@ def set_version(version = "") {
 
 def set_site(site = "") {
     this.site = site
+
+    echo "# site: ${site}"
 }
 
 def scan(source_lang = "") {

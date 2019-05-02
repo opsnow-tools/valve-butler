@@ -38,9 +38,7 @@ def set_version(version = "") {
 }
 
 def set_site(site = "") {
-    if (!site) {
-        this.site = site
-    }
+    this.site = site
 }
 
 def scan(source_lang = "") {

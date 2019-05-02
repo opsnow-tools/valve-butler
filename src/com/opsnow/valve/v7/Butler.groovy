@@ -5,6 +5,9 @@ def debug() {
     sh """
         ls -al
         ls -al ~
+        ls -al ~/.jenkins
+        ls -al ~/agent
+        ls -al ~/workspace
     """
 }
 

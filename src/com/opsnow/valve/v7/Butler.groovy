@@ -389,6 +389,9 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         }
     }
 
+    echo "values_home ${values_home}"
+    echo "values_path ${values_path}"
+
     if (values_path) {
 
         // helm install

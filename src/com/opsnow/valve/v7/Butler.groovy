@@ -381,6 +381,13 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     // values_path
     values_path = ""
     if (!values_home) {
+        sh """
+            ls ${values_home}
+            ls ${values_home}/${name}
+            ls ${values_home}/${name} | grep '${namespace}.yaml'
+            ls ${values_home}/${name} | grep '${namespace}.yaml' | wc -l
+        """
+
         count = sh(script: "ls ${values_home}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
         if ("${count}" == "0") {
             throw new RuntimeException("values_path not found.")

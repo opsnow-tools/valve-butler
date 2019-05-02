@@ -19,6 +19,7 @@ def prepare(name = "sample", version = "") {
     this.cluster = ""
     this.namespace = ""
     this.sub_domain = ""
+    this.site = ""
 
     // this cluster
     load_variables()
@@ -34,6 +35,12 @@ def set_version(version = "") {
     this.version = version
 
     echo "# version: ${version}"
+}
+
+def set_site(site = "") {
+    if (!site) {
+        this.site = site
+    }
 }
 
 def scan(source_lang = "") {
@@ -372,25 +379,46 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         desired = 2
     }
 
-    // hpa min value
-    hpa_min = 2
-    if (cluster == "dev") {
-        hpa_min = 1
+    // values_path
+    values_path = ""
+    if (!site) {
+        values_path = "${site}/${name}/${namespace}.yaml"
+        if (!fileExists("${values_path}")) {
+            values_path = ""
+        }
     }
 
-    sh """
-        helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
-                     --version ${version} --namespace ${namespace} --devel \
-                     --set fullnameOverride=${name}-${namespace} \
-                     --set ingress.basedomain=${base_domain} \
-                     --set ingress.subdomain=${sub_domain} \
-                     --set configmap.enabled=${configmap} \
-                     --set secret.enabled=${secret} \
-                     --set replicaCount=${desired} \
-                     --set hpa.min=${hpa_min} \
-                     --set namespace=${namespace} \
-                     --set profile=${profile}
-    """
+    if (values_path) {
+
+        sh """
+            helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
+                        --version ${version} --namespace ${namespace} --devel \
+                        --set replicaCount=${desired} \
+                        --values ${values_path}
+        """
+    } else {
+
+        // hpa min value
+        hpa_min = 2
+        if (cluster == "dev") {
+            hpa_min = 1
+        }
+
+        sh """
+            helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
+                        --version ${version} --namespace ${namespace} --devel \
+                        --set fullnameOverride=${name}-${namespace} \
+                        --set ingress.basedomain=${base_domain} \
+                        --set ingress.subdomain=${sub_domain} \
+                        --set configmap.enabled=${configmap} \
+                        --set secret.enabled=${secret} \
+                        --set replicaCount=${desired} \
+                        --set hpa.min=${hpa_min} \
+                        --set namespace=${namespace} \
+                        --set profile=${profile}
+        """
+
+    }
 
     sh """
         helm search ${name} && \
@@ -431,7 +459,6 @@ def scan_charts_version(mychart = "") {
       list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
       list
 }
-
 
 def rollback(cluster = "", namespace = "", revision = "") {
     if (!name) {

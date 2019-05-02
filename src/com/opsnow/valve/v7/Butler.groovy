@@ -394,8 +394,10 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         sh """
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
                         --version ${version} --namespace ${namespace} --devel \
+                        --values ${values_path} \
                         --set replicaCount=${desired} \
-                        --values ${values_path}
+                        --set namespace=${namespace} \
+                        --set profile=${profile}
         """
 
     } else {

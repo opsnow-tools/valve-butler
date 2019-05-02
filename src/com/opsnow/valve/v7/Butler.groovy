@@ -380,7 +380,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
 
     // values_path
     values_path = ""
-    if (!values_home) {
+    if (values_home) {
         sh """
             ls ${values_home}
             ls ${values_home}/${name}

@@ -382,6 +382,8 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     values_path = ""
     if (values_home) {
         sh """
+            pwd
+            ls .
             ls ${values_home}
             ls ${values_home}/${name}
             ls ${values_home}/${name} | grep '${namespace}.yaml'

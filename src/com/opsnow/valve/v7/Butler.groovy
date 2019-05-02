@@ -19,7 +19,6 @@ def prepare(name = "sample", version = "") {
     this.cluster = ""
     this.namespace = ""
     this.sub_domain = ""
-    this.site = ""
 
     // this cluster
     load_variables()
@@ -37,10 +36,10 @@ def set_version(version = "") {
     echo "# version: ${version}"
 }
 
-def set_site(site = "") {
-    this.site = site
+def set_values_home(values_home = "") {
+    this.values_home = values_home
 
-    echo "# site: ${site}"
+    echo "# values_home: ${values_home}"
 }
 
 def scan(source_lang = "") {
@@ -381,12 +380,12 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
 
     // values_path
     values_path = ""
-    if (!this.site) {
-        count = sh(script: "ls ${this.site}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
+    if (!this.values_home) {
+        count = sh(script: "ls ${this.values_home}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
         if ("${count}" == "0") {
             throw new RuntimeException("values_path not found.")
         } else {
-            values_path = "${this.site}/${name}/${namespace}.yaml"
+            values_path = "${this.values_home}/${name}/${namespace}.yaml"
         }
     }
 

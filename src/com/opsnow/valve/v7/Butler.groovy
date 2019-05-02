@@ -388,6 +388,12 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         }
     }
 
+    sh """
+        echo "${site}/${name}"
+        echo "${values_path}"
+        ls -al "${site}/${name}"
+    """
+
     if (values_path) {
 
         // helm install

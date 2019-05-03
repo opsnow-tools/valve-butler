@@ -390,7 +390,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         }
     }
 
-    // app-version: https://github.com/helm/helm/pull/5492/files/de6b33782c52a4fd8336be178f9ebad49efeb86b
+    // app-version: https://github.com/helm/helm/pull/5492
 
     if (values_path) {
 

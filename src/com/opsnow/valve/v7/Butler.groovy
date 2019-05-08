@@ -390,6 +390,8 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         }
     }
 
+    // app-version: https://github.com/helm/helm/pull/5492
+
     if (values_path) {
 
         // helm install
@@ -401,6 +403,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
                         --set namespace=${namespace} \
                         --set profile=${profile}
         """
+        // --app-version ${version} \
 
     } else {
 
@@ -414,9 +417,9 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         sh """
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
                         --version ${version} --namespace ${namespace} --devel \
-                        --set fullnameOverride=${name}-${namespace} \
-                        --set ingress.basedomain=${base_domain} \
+                        --set fullnameOverride=${name} \
                         --set ingress.subdomain=${sub_domain} \
+                        --set ingress.basedomain=${base_domain} \
                         --set configmap.enabled=${configmap} \
                         --set secret.enabled=${secret} \
                         --set replicaCount=${desired} \
@@ -424,6 +427,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
                         --set namespace=${namespace} \
                         --set profile=${profile}
         """
+        // --app-version ${version} \
 
     }
 

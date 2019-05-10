@@ -177,11 +177,14 @@ def env_config(type = "", name = "", namespace = "") {
     }
 
     // check config
-    count = sh(script: "kubectl get ${type} -n ${namespace} | grep ${name}-${namespace} | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get ${type} -n ${namespace} | grep ${name} | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
-        return "false"
+        return ""
     }
-    return "true"
+
+    // md5sum
+    sum = sh(script: "kubectl get ${type} -n ${namespace} ${name} -o yaml | md5sum | awk '{printf \$1}'", returnStdout: true).trim()
+    return sum
 }
 
 def make_chart() {
@@ -311,7 +314,7 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
     }
 
     sh """
-        sed -i -e \"s|name: REPLACE-ME|name: ${name}-${namespace}|\" ${yaml_path}
+        sed -i -e \"s|name: REPLACE-ME|name: ${name}|\" ${yaml_path}
     """
 
     // cluster
@@ -360,21 +363,31 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
 
     this.sub_domain = sub_domain
 
-    // config (secret, configmap)
-    configmap = env_config("configmap", name, namespace)
-    secret = env_config("secret", name, namespace)
+    // // config configmap
+    // configmap_hash = env_config("configmap", name, namespace)
+    // configmap_enabled = "false"
+    // if (configmap_hash == "") {
+    //     configmap_enabled = "true"
+    // }
+
+    // config secret
+    secret_hash = env_config("secret", name, namespace)
+    secret_enabled = "false"
+    if (secret_hash != "") {
+        secret_enabled = "true"
+    }
 
     // latest version
     if (version == "latest") {
         version = sh(script: "helm search chartmuseum/${name} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
-        if (!version) {
+        if (version == "") {
             echo "deploy:latest version is null."
             throw new RuntimeException("latest version is null.")
         }
     }
 
     // latest pod count
-    desired = sh(script: "kubectl get deploy -n ${namespace} | grep ${name}-${namespace} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
+    desired = sh(script: "kubectl get deploy -n ${namespace} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
     if (desired == "") {
         desired = 2
     }
@@ -399,6 +412,8 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
                 --version ${version} --namespace ${namespace} --devel \
                 --values ${values_path} \
+                --set secret.enabled=${secret_enabled} \
+                --set secret.hash=${secret_hash} \
                 --set replicaCount=${desired} \
                 --set namespace=${namespace} \
                 --set profile=${profile}
@@ -407,12 +422,6 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
 
     } else {
 
-        // hpa min value
-        hpa_min = 2
-        if (cluster == "dev") {
-            hpa_min = 1
-        }
-
         // helm install
         sh """
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
@@ -420,10 +429,9 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
                 --set fullnameOverride=${name} \
                 --set ingress.subdomain=${sub_domain} \
                 --set ingress.basedomain=${base_domain} \
-                --set configmap.enabled=${configmap} \
-                --set secret.enabled=${secret} \
+                --set secret.enabled=${secret_enabled} \
+                --set secret.hash=${secret_hash} \
                 --set replicaCount=${desired} \
-                --set hpa.min=${hpa_min} \
                 --set namespace=${namespace} \
                 --set profile=${profile}
         """

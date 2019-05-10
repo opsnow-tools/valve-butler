@@ -397,11 +397,11 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         // helm install
         sh """
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
-                        --version ${version} --namespace ${namespace} --devel \
-                        --values ${values_path} \
-                        --set replicaCount=${desired} \
-                        --set namespace=${namespace} \
-                        --set profile=${profile}
+                --version ${version} --namespace ${namespace} --devel \
+                --values ${values_path} \
+                --set replicaCount=${desired} \
+                --set namespace=${namespace} \
+                --set profile=${profile}
         """
         // --app-version ${version} \
 
@@ -416,16 +416,16 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         // helm install
         sh """
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
-                        --version ${version} --namespace ${namespace} --devel \
-                        --set fullnameOverride=${name} \
-                        --set ingress.subdomain=${sub_domain} \
-                        --set ingress.basedomain=${base_domain} \
-                        --set configmap.enabled=${configmap} \
-                        --set secret.enabled=${secret} \
-                        --set replicaCount=${desired} \
-                        --set hpa.min=${hpa_min} \
-                        --set namespace=${namespace} \
-                        --set profile=${profile}
+                --version ${version} --namespace ${namespace} --devel \
+                --set fullnameOverride=${name} \
+                --set ingress.subdomain=${sub_domain} \
+                --set ingress.basedomain=${base_domain} \
+                --set configmap.enabled=${configmap} \
+                --set secret.enabled=${secret} \
+                --set replicaCount=${desired} \
+                --set hpa.min=${hpa_min} \
+                --set namespace=${namespace} \
+                --set profile=${profile}
         """
         // --app-version ${version} \
 
@@ -448,27 +448,27 @@ def scan_helm(cluster = "", namespace = "") {
     // admin can scan all images,
     // others can scan own images.
     if (!namespace) {
-      list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
+        list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
     } else {
-      list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
+        list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
     }
     list
 }
 
 def scan_charts() {
-      if (!chartmuseum) {
+    if (!chartmuseum) {
         load_variables()
-      }
-      list = sh(script: "curl https://${chartmuseum}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
-      list
+    }
+    list = sh(script: "curl https://${chartmuseum}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
+    list
 }
 
 def scan_charts_version(mychart = "") {
-      if (!chartmuseum) {
+    if (!chartmuseum) {
         load_variables()
-      }
-      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
-      list
+    }
+    list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
+    list
 }
 
 def rollback(cluster = "", namespace = "", revision = "") {

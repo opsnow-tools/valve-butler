@@ -1,0 +1,66 @@
+#
+# CircleCI 2.0
+#
+version: 2
+jobs:
+  package:
+    docker:
+      - image: circleci/python
+    working_directory: /tmp/works
+    steps:
+      - checkout
+      - run:
+          name: Package
+          command: |
+            mkdir target
+            curl -sLo target/builder.sh repo.opsnow.io/valve-ctl/builder
+            bash ./target/builder.sh package
+      - persist_to_workspace:
+          root: /tmp/works
+          paths:
+            - target/*
+  publish:
+    docker:
+      - image: opspresso/awscli
+    steps:
+      - attach_workspace:
+          at: works
+      - run:
+          name: Publish
+          command: |
+            bash ./works/target/builder.sh publish ./works
+  release:
+    docker:
+      - image: circleci/golang
+    steps:
+      - attach_workspace:
+          at: works
+      - run:
+          name: Release
+          command: |
+            bash ./works/target/builder.sh release ./works
+  slack:
+    docker:
+      - image: circleci/python
+    steps:
+      - attach_workspace:
+          at: works
+      - run:
+          name: Slack
+          command: |
+            bash ./works/target/builder.sh slack ./works
+
+workflows:
+  version: 2
+  apply:
+    jobs:
+      - package
+      - publish:
+          requires:
+            - package
+      - release:
+          requires:
+            - package
+      - slack:
+          requires:
+            - release

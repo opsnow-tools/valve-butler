@@ -269,7 +269,6 @@ def build_image() {
 
 def helm_init() {
     sh """
-        helm init --upgrade && \
         helm version
     """
 

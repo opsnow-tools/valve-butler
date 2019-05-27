@@ -269,7 +269,6 @@ def build_image() {
 
 def helm_init() {
     sh """
-        helm init --upgrade && \
         helm version
     """
 
@@ -366,14 +365,14 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     this.sub_domain = sub_domain
 
     // config configmap
-    configmap = env_config("configmap", name, namespace)
+    // configmap = env_config("configmap", name, namespace)
     // configmap_enabled = "false"
     // if (configmap_hash == "") {
     //     configmap_enabled = "true"
     // }
 
     // config secret
-    secret = env_config("secret", name, namespace)
+    // secret = env_config("secret", name, namespace)
     // secret_enabled = "false"
     // if (secret_hash != "") {
     //     secret_enabled = "true"
@@ -414,15 +413,13 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
                 --version ${version} --namespace ${namespace} --devel \
                 --values ${values_path} \
-                --set configmap.enabled=${configmap} \
-                --set secret.enabled=${secret} \
                 --set replicaCount=${desired} \
                 --set namespace=${namespace} \
                 --set profile=${profile}
         """
         // --app-version ${version} \
-        // --set secret.enabled=${secret_enabled} \
-        // --set secret.hash=${secret_hash} \
+        // --set configmap.enabled=${configmap} \
+        // --set secret.enabled=${secret} \
 
     } else {
 
@@ -433,15 +430,13 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
                 --set fullnameOverride=${name} \
                 --set ingress.subdomain=${sub_domain} \
                 --set ingress.basedomain=${base_domain} \
-                --set configmap.enabled=${configmap} \
-                --set secret.enabled=${secret} \
                 --set replicaCount=${desired} \
                 --set namespace=${namespace} \
                 --set profile=${profile}
         """
         // --app-version ${version} \
-        // --set secret.enabled=${secret_enabled} \
-        // --set secret.hash=${secret_hash} \
+        // --set configmap.enabled=${configmap} \
+        // --set secret.enabled=${secret} \
 
     }
 

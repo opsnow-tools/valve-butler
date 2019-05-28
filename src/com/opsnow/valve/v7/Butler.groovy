@@ -120,6 +120,7 @@ def env_cluster(cluster = "") {
     }
 
     sh """
+        rm -rf ${home}/.aws && mkdir -p ${home}/.aws && \
         rm -rf ${home}/.kube && mkdir -p ${home}/.kube
     """
 

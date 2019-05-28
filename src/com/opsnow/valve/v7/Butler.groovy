@@ -133,6 +133,7 @@ def env_cluster(cluster = "") {
     }
 
     sh """
+        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.aws | base64 -d > ${home}/.aws/config
         kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.text | base64 -d > ${home}/.kube/config
     """
 

@@ -383,6 +383,9 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     //     secret_enabled = "true"
     // }
 
+    // extra_values (format = --set KEY=VALUE)
+    extra_values = ""
+
     // latest version
     if (version == "latest") {
         version = sh(script: "helm search chartmuseum/${name} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
@@ -392,10 +395,10 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         }
     }
 
-    // latest pod count
+    // Keep latest pod count
     desired = sh(script: "kubectl get deploy -n ${namespace} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
-    if (desired == "") {
-        desired = 2
+    if (desired != "") {
+        extra_values = "--set replicaCount=${desired}"
     }
 
     // values_path
@@ -418,9 +421,9 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
             helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
                 --version ${version} --namespace ${namespace} --devel \
                 --values ${values_path} \
-                --set replicaCount=${desired} \
                 --set namespace=${namespace} \
-                --set profile=${profile}
+                --set profile=${profile} \
+                ${extra_values}
         """
         // --app-version ${version} \
         // --set configmap.enabled=${configmap} \
@@ -435,9 +438,9 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
                 --set fullnameOverride=${name} \
                 --set ingress.subdomain=${sub_domain} \
                 --set ingress.basedomain=${base_domain} \
-                --set replicaCount=${desired} \
                 --set namespace=${namespace} \
-                --set profile=${profile}
+                --set profile=${profile} \
+                ${extra_values}
         """
         // --app-version ${version} \
         // --set configmap.enabled=${configmap} \

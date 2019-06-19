@@ -341,6 +341,31 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
     """
 }
 
+def deploy_only(deploy_name = "", cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
+
+    // env cluster
+    env_cluster(cluster)
+
+    // env namespace
+    env_namespace(namespace)
+
+    // helm init
+    helm_init()
+
+    sh """
+        helm upgrade --install ${deploy_name} chartmuseum/${name} \
+            --version ${version} --namespace ${namespace} --devel \
+            --values ${values_path} \
+            --set namespace=${namespace} \
+            --set profile=${profile} 
+    """
+
+    sh """
+        helm search ${name} && \
+        helm history ${name}-${namespace} --max 10
+    """
+}
+
 def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     if (!name) {
         echo "deploy:name is null."

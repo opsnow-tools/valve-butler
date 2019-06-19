@@ -193,7 +193,7 @@ def env_config(type = "", name = "", namespace = "") {
     // return sum
 }
 
-def make_chart() {
+def make_chart(path = "") {
     if (!name) {
         echo "make_chart:name is null."
         throw new RuntimeException("name is null.")
@@ -202,13 +202,16 @@ def make_chart() {
         echo "make_chart:version is null."
         throw new RuntimeException("version is null.")
     }
+    if (!path) {
+        path = "charts/${name}"
+    }
 
-    if (!fileExists("charts/${name}")) {
-        echo "no file charts/${name}"
+    if (!fileExists("${path}")) {
+        echo "no file ${path}"
         return
     }
 
-    dir("charts/${name}") {
+    dir("${path}") {
         sh """
             sed -i -e \"s/name: .*/name: ${name}/\" Chart.yaml && \
             sed -i -e \"s/version: .*/version: ${version}/\" Chart.yaml && \

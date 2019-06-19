@@ -204,6 +204,7 @@ def make_chart() {
     }
 
     if (!fileExists("charts/${name}")) {
+        echo "no file charts/${name}"
         return
     }
 

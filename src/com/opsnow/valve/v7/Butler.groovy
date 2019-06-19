@@ -341,7 +341,7 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
     """
 }
 
-def deploy_only(deploy_name = "", cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
+def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
 
     // env cluster
     env_cluster(cluster)
@@ -354,7 +354,7 @@ def deploy_only(deploy_name = "", cluster = "", namespace = "", sub_domain = "",
 
     sh """
         helm upgrade --install ${deploy_name} chartmuseum/${name} \
-            --namespace ${namespace} --devel \
+            --version ${version} --namespace ${namespace} --devel \
             --values ${values_path} \
             --set namespace=${namespace} \
             --set profile=${profile} 

@@ -221,7 +221,7 @@ def make_chart() {
     }
 }
 
-def build_chart() {
+def build_chart(path = "") {
     if (!name) {
         echo "build_chart:name is null."
         throw new RuntimeException("name is null.")
@@ -229,6 +229,9 @@ def build_chart() {
     if (!version) {
         echo "build_chart:version is null."
         throw new RuntimeException("version is null.")
+    }
+    if (!path) {
+        path = "charts/${name}"
     }
 
     helm_init()
@@ -243,7 +246,7 @@ def build_chart() {
     }
 
     // helm push
-    dir("charts/${name}") {
+    dir("${path}") {
         sh "helm lint ."
 
         if (chartmuseum) {

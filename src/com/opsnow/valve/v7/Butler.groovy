@@ -354,7 +354,7 @@ def deploy_only(deploy_name = "", cluster = "", namespace = "", sub_domain = "",
 
     sh """
         helm upgrade --install ${deploy_name} chartmuseum/${name} \
-            --version ${version} --namespace ${namespace} --devel \
+            --namespace ${namespace} --devel \
             --values ${values_path} \
             --set namespace=${namespace} \
             --set profile=${profile} 

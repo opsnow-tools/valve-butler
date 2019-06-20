@@ -199,7 +199,8 @@ def make_chart(path = "", latest = false) {
         throw new RuntimeException("name is null.")
     }
     if (latest) {
-        version = scan_images_version(${name}, true)
+        echo "latest version scan"
+        version = scan_images_version(name, true)
     }
     if (!version) {
         echo "make_chart:version is null."

@@ -359,7 +359,7 @@ def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", su
 
     sh """
         helm upgrade --install ${deploy_name} chartmuseum/${name} \
-            --version ${version} --namespace ${namespace} --devel \
+            --namespace ${namespace} \
             --values ${values_path} \
             --set namespace=${namespace} \
             --set ingress.basedomain=${base_domain} \

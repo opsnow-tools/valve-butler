@@ -200,7 +200,9 @@ def make_chart(path = "", latest = false) {
     }
     if (latest) {
         echo "latest version scan"
-        version = scan_images_version(name, true)
+        app_version = scan_images_version(name, true)
+    } else {
+        app_version = version
     }
     if (!version) {
         echo "make_chart:version is null."
@@ -220,7 +222,7 @@ def make_chart(path = "", latest = false) {
         sh """
             sed -i -e \"s/name: .*/name: ${name}/\" Chart.yaml && \
             sed -i -e \"s/version: .*/version: ${version}/\" Chart.yaml && \
-            sed -i -e \"s/tag: .*/tag: ${version}/g\" values.yaml
+            sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
         """
 
         if (registry) {

@@ -199,8 +199,7 @@ def make_chart(path = "") {
         throw new RuntimeException("name is null.")
     }
     if (!version) {
-        echo "make_chart:version is null."
-        throw new RuntimeException("version is null.")
+        version = scan_images_version(${name}, true)
     }
     if (!path) {
         path = "charts/${name}"
@@ -518,9 +517,9 @@ def scan_images_version(image_name = "", latest = false) {
         load_variables()
     }
     if(latest) {
-      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | head -n 1", returnStdout: true).trim()
+      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | sort -r | head -n 1", returnStdout: true).trim()
     } else {
-      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]'", returnStdout: true).trim()
+      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | sort -r", returnStdout: true).trim()
     }
     list
 }

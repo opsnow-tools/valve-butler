@@ -512,11 +512,15 @@ def scan_charts() {
     list
 }
 
-def scan_charts_version(mychart = "") {
+def scan_charts_version(mychart = "", latest = false) {
     if (!chartmuseum) {
         load_variables()
     }
-    list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
+    if(latest) {
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | head -n 1", returnStdout: true).trim()
+    } else {
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
+    }
     list
 }
 

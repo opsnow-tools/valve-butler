@@ -193,13 +193,18 @@ def env_config(type = "", name = "", namespace = "") {
     // return sum
 }
 
-def make_chart(path = "") {
+def make_chart(path = "", latest = false) {
     if (!name) {
         echo "make_chart:name is null."
         throw new RuntimeException("name is null.")
     }
-    if (!version) {
+    if (latest) {
         version = scan_images_version(${name}, true)
+    }
+    if (!version) {
+        echo "make_chart:version is null."
+        throw new RuntimeException("version is null.")
+
     }
     if (!path) {
         path = "charts/${name}"

@@ -357,6 +357,7 @@ def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", su
             --version ${version} --namespace ${namespace} --devel \
             --values ${values_path} \
             --set namespace=${namespace} \
+            --set ingress.basedomain=${base_domain} \
             --set profile=${profile} 
     """
 
@@ -500,6 +501,26 @@ def scan_helm(cluster = "", namespace = "") {
         list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
     } else {
         list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
+    }
+    list
+}
+
+def scan_images() {
+    if (!chartmuseum) {
+        load_variables()
+    }
+    list = sh(script: "curl -X GET https://${registry}/v2/_catalog | jq -r '.repositories[]'", returnStdout: true).trim()
+    list
+}
+
+def scan_images_version(image_name = "", latest = false) {
+    if (!chartmuseum) {
+        load_variables()
+    }
+    if(latest) {
+      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | head -n 1", returnStdout: true).trim()
+    } else {
+      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]'", returnStdout: true).trim()
     }
     list
 }

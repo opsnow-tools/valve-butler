@@ -37,6 +37,14 @@ def set_version(version = "") {
     echo "# version: ${version}"
 }
 
+def get_version() {
+    if (!version) {
+        throw new RuntimeException("No version")
+    }
+    echo "# version: ${version}"
+    this.version
+}
+
 def set_values_home(values_home = "") {
     this.values_home = values_home
 
@@ -374,7 +382,7 @@ def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", su
     """
 }
 
-def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
+def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
     if (!name) {
         echo "deploy:name is null."
         throw new RuntimeException("name is null.")
@@ -442,13 +450,15 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     }
 
     // values_path
-    values_path = ""
-    if (values_home) {
-        count = sh(script: "ls ${values_home}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
-        if ("${count}" == "0") {
-            throw new RuntimeException("values_path not found.")
-        } else {
-            values_path = "${values_home}/${name}/${namespace}.yaml"
+    if (!values_path) {
+        values_path = ""
+        if (values_home) {
+            count = sh(script: "ls ${values_home}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
+            if ("${count}" == "0") {
+                throw new RuntimeException("values_path not found.")
+            } else {
+                values_path = "${values_home}/${name}/${namespace}.yaml"
+            }
         }
     }
 
@@ -544,7 +554,7 @@ def scan_charts_version(mychart = "", latest = false) {
     if (!chartmuseum) {
         load_variables()
     }
-    if(latest) {
+    if (latest) {
       list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | head -n 1", returnStdout: true).trim()
     } else {
       list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()

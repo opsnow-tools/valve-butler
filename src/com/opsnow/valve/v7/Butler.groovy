@@ -555,9 +555,9 @@ def scan_charts_version(mychart = "", latest = false) {
         load_variables()
     }
     if (latest) {
-      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | head -n 1", returnStdout: true).trim()
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | sort -r | head -n 1", returnStdout: true).trim()
     } else {
-      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | sort -r", returnStdout: true).trim()
     }
     list
 }

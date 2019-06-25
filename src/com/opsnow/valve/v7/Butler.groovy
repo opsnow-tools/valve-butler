@@ -37,6 +37,14 @@ def set_version(version = "") {
     echo "# version: ${version}"
 }
 
+def get_version() {
+    if (!version) {
+        throw new RuntimeException("No version")
+    }
+    echo "# version: ${version}"
+    this.version
+}
+
 def set_values_home(values_home = "") {
     this.values_home = values_home
 
@@ -193,25 +201,36 @@ def env_config(type = "", name = "", namespace = "") {
     // return sum
 }
 
-def make_chart() {
+def make_chart(path = "", latest = false) {
     if (!name) {
         echo "make_chart:name is null."
         throw new RuntimeException("name is null.")
     }
+    if (latest) {
+        echo "latest version scan"
+        app_version = scan_images_version(name, true)
+    } else {
+        app_version = version
+    }
     if (!version) {
         echo "make_chart:version is null."
         throw new RuntimeException("version is null.")
+
+    }
+    if (!path) {
+        path = "charts/${name}"
     }
 
-    if (!fileExists("charts/${name}")) {
+    if (!fileExists("${path}")) {
+        echo "no file ${path}"
         return
     }
 
-    dir("charts/${name}") {
+    dir("${path}") {
         sh """
             sed -i -e \"s/name: .*/name: ${name}/\" Chart.yaml && \
             sed -i -e \"s/version: .*/version: ${version}/\" Chart.yaml && \
-            sed -i -e \"s/tag: .*/tag: ${version}/g\" values.yaml
+            sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
         """
 
         if (registry) {
@@ -220,7 +239,7 @@ def make_chart() {
     }
 }
 
-def build_chart() {
+def build_chart(path = "") {
     if (!name) {
         echo "build_chart:name is null."
         throw new RuntimeException("name is null.")
@@ -228,6 +247,9 @@ def build_chart() {
     if (!version) {
         echo "build_chart:version is null."
         throw new RuntimeException("version is null.")
+    }
+    if (!path) {
+        path = "charts/${name}"
     }
 
     helm_init()
@@ -242,7 +264,7 @@ def build_chart() {
     }
 
     // helm push
-    dir("charts/${name}") {
+    dir("${path}") {
         sh "helm lint ."
 
         if (chartmuseum) {
@@ -334,7 +356,33 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
     """
 }
 
-def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
+def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
+
+    // env cluster
+    env_cluster(cluster)
+
+    // env namespace
+    env_namespace(namespace)
+
+    // helm init
+    helm_init()
+
+    sh """
+        helm upgrade --install ${deploy_name} chartmuseum/${name} \
+            --namespace ${namespace} --devel \
+            --values ${values_path} \
+            --set namespace=${namespace} \
+            --set ingress.basedomain=${base_domain} \
+            --set profile=${profile} 
+    """
+
+    sh """
+        helm search ${name} && \
+        helm history ${name}-${namespace} --max 10
+    """
+}
+
+def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
     if (!name) {
         echo "deploy:name is null."
         throw new RuntimeException("name is null.")
@@ -402,13 +450,15 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     }
 
     // values_path
-    values_path = ""
-    if (values_home) {
-        count = sh(script: "ls ${values_home}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
-        if ("${count}" == "0") {
-            throw new RuntimeException("values_path not found.")
-        } else {
-            values_path = "${values_home}/${name}/${namespace}.yaml"
+    if (!values_path) {
+        values_path = ""
+        if (values_home) {
+            count = sh(script: "ls ${values_home}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
+            if ("${count}" == "0") {
+                throw new RuntimeException("values_path not found.")
+            } else {
+                values_path = "${values_home}/${name}/${namespace}.yaml"
+            }
         }
     }
 
@@ -472,6 +522,26 @@ def scan_helm(cluster = "", namespace = "") {
     list
 }
 
+def scan_images() {
+    if (!chartmuseum) {
+        load_variables()
+    }
+    list = sh(script: "curl -X GET https://${registry}/v2/_catalog | jq -r '.repositories[]'", returnStdout: true).trim()
+    list
+}
+
+def scan_images_version(image_name = "", latest = false) {
+    if (!chartmuseum) {
+        load_variables()
+    }
+    if(latest) {
+      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | sort -r | head -n 1", returnStdout: true).trim()
+    } else {
+      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | sort -r", returnStdout: true).trim()
+    }
+    list
+}
+
 def scan_charts() {
     if (!chartmuseum) {
         load_variables()
@@ -480,11 +550,15 @@ def scan_charts() {
     list
 }
 
-def scan_charts_version(mychart = "") {
+def scan_charts_version(mychart = "", latest = false) {
     if (!chartmuseum) {
         load_variables()
     }
-    list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version'", returnStdout: true).trim()
+    if (latest) {
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | sort -r | head -n 1", returnStdout: true).trim()
+    } else {
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | sort -r", returnStdout: true).trim()
+    }
     list
 }
 

@@ -520,7 +520,7 @@ def mvn_deploy(source_root = "") {
     }
 }
 
-def mvn_sonar(source_root = "", sonarqube = "") {
+def mvn_sonar(source_root = "", sonarqube = "", sonar_token="") {
     if (!sonarqube) {
         if (!this.sonarqube) {
             echo "mvn_sonar:sonarqube is null."
@@ -531,7 +531,7 @@ def mvn_sonar(source_root = "", sonarqube = "") {
     source_root = get_source_root(source_root)
     dir("${source_root}") {
         settings = get_m2_settings()
-        sh "mvn sonar:sonar ${settings} -Dsonar.login=83969e1bb10742c14fe2a2981d317064ad1b443c -Dsonar.host.url=${sonarqube} -DskipTests=true"
+        sh "mvn sonar:sonar ${settings} -Dsonar.login= ${sonar_token} -Dsonar.host.url=${sonarqube} -DskipTests=true"
     }
 }
 

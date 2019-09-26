@@ -2,7 +2,7 @@
 package com.opsnow.valve.v7;
 
 def prepare(name = "sample", version = "", sonar_token = "") {
-    echo "${token}"
+    echo "${sonar_token}"
     // image name
     this.name = name
 

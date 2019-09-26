@@ -1,8 +1,8 @@
 #!/usr/bin/groovy
 package com.opsnow.valve.v7;
 
-def prepare(name = "sample", version = "") {
-    echo "${name}"
+def prepare(name = "sample", version = "", sonar_token = "") {
+    echo "${token}"
     // image name
     this.name = name
 

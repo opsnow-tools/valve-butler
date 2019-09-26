@@ -1,8 +1,7 @@
 #!/usr/bin/groovy
 package com.opsnow.valve.v7;
 
-def prepare(name = "sample", sonar_token = "", version = "") {
-    echo "${sonar_token}"
+def prepare(name = "sample", version = "") {
     // image name
     this.name = name
 
@@ -521,7 +520,7 @@ def mvn_deploy(source_root = "") {
     }
 }
 
-def mvn_sonar(source_root = "", sonarqube = "", sonar_token = "") {
+def mvn_sonar(sonar_token = "", source_root = "", sonarqube = "") {
     if (!sonar_token) {
       echo "sonar_token is null"
       throw new RuntimeException("sonar_token is null.")

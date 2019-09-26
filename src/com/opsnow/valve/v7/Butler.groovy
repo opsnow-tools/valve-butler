@@ -536,7 +536,7 @@ def mvn_sonar(sonar_token = "", source_root = "", sonarqube = "") {
     source_root = get_source_root(source_root)
     dir("${source_root}") {
         settings = get_m2_settings()
-        sh "mvn sonar:sonar ${settings} -Dsonar.login= ${sonar_token} -Dsonar.host.url=${sonarqube} -DskipTests=true"
+        sh "mvn sonar:sonar ${settings} -Dsonar.login=${sonar_token} -Dsonar.host.url=${sonarqube} -DskipTests=true"
     }
 }
 

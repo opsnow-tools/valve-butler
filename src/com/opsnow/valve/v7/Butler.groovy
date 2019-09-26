@@ -525,7 +525,7 @@ def mvn_sonar(sonar_token = "", source_root = "", sonarqube = "") {
       echo "sonar_token is null"
       throw new RuntimeException("sonar_token is null.")
     }
-    echo "sonar token = ${sonar_token}"
+    echo "here sonar token = ${sonar_token}"
     if (!sonarqube) {
         if (!this.sonarqube) {
             echo "mvn_sonar:sonarqube is null."

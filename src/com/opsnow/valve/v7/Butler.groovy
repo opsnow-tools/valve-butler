@@ -2,6 +2,7 @@
 package com.opsnow.valve.v7;
 
 def prepare(name = "sample", version = "") {
+    echo "${name}"
     // image name
     this.name = name
 
@@ -520,7 +521,7 @@ def mvn_deploy(source_root = "") {
     }
 }
 
-def mvn_sonar(source_root = "", sonarqube = "", sonar_token="") {
+def mvn_sonar(source_root = "", sonarqube = "", sonar_token = "") {
     if (!sonar_token) {
       echo "sonar_token is null"
       throw new RuntimeException("sonar_token is null.")

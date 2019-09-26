@@ -680,10 +680,10 @@ def mvn_deploy(source_root = "") {
 }
 
 def mvn_sonar(sonar_token = "", source_root = "", sonarqube = "") {
-    if (!sonar_token) {
-      echo "sonar token is null. Check secret text 'sonar-token' in credentials"
-      throw new RuntimeException("sonar token is null.")
-    }
+    //if (!sonar_token) {
+    //  echo "sonar token is null. Check secret text 'sonar-token' in credentials"
+    //  throw new RuntimeException("sonar token is null.")
+    //}
     if (!sonarqube) {
         if (!this.sonarqube) {
             echo "mvn_sonar:sonarqube is null."
@@ -694,7 +694,11 @@ def mvn_sonar(sonar_token = "", source_root = "", sonarqube = "") {
     source_root = get_source_root(source_root)
     dir("${source_root}") {
         settings = get_m2_settings()
-        sh "mvn sonar:sonar ${settings} -Dsonar.login=${sonar_token} -Dsonar.host.url=${sonarqube} -DskipTests=true"
+        if (!sonar_token) {
+          sh "mvn sonar:sonar ${settings} -Dsonar.host.url=${sonarqube} -DskipTests=true"
+        } else {
+          sh "mvn sonar:sonar ${settings} -Dsonar.login=${sonar_token} -Dsonar.host.url=${sonarqube} -DskipTests=true"
+        }
     }
 }
 

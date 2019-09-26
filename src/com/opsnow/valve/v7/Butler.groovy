@@ -521,6 +521,7 @@ def mvn_deploy(source_root = "") {
 }
 
 def mvn_sonar(source_root = "", sonarqube = "", sonar_token="") {
+    echo "${sonar_token}"
     if (!sonarqube) {
         if (!this.sonarqube) {
             echo "mvn_sonar:sonarqube is null."

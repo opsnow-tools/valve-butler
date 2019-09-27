@@ -692,10 +692,16 @@ def mvn_sonar(sonar_token = "", source_root = "", sonarqube = "") {
         }
         sonarqube = "https://${this.sonarqube}"
     }
-    source_root = get_source_root(source_root)
-    dir("${source_root}") {
-        settings = get_m2_settings()
-        sh "mvn sonar:sonar ${settings} -Dsonar.login=${sonar_token} -Dsonar.host.url=${sonarqube} -DskipTests=true"
+    withCredentials([string(credentialsId: 'sonar-token', variable: 'sonar_token')]){
+      source_root = get_source_root(source_root)
+      dir("${source_root}") {
+          settings = get_m2_settings()
+          if (!sonar_token) {
+            sh "mvn sonar:sonar ${settings} -Dsonar.host.url=${sonarqube} -DskipTests=true"
+          } else {
+            sh "mvn sonar:sonar ${settings} -Dsonar.login=${sonar_token} -Dsonar.host.url=${sonarqube} -DskipTests=true"
+          }
+      }
     }
 }
 

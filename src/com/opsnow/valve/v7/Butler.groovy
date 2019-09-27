@@ -1,10 +1,31 @@
 #!/usr/bin/groovy
 package com.opsnow.valve.v7;
 
+def debug() {
+    sh """
+        ls -al
+        ls -al ~
+    """
+}
+
 def prepare(name = "sample", version = "") {
     // image name
     this.name = name
 
+    echo "# name: ${name}"
+
+    set_version(version)
+
+    this.cluster = ""
+    this.namespace = ""
+    this.sub_domain = ""
+    this.values_home = ""
+
+    // this cluster
+    load_variables()
+}
+
+def set_version(version = "") {
     // version
     if (!version) {
         date = (new Date()).format('yyyyMMdd-HHmm')
@@ -13,15 +34,21 @@ def prepare(name = "sample", version = "") {
 
     this.version = version
 
-    echo "# name: ${name}"
     echo "# version: ${version}"
+}
 
-    this.cluster = ""
-    this.namespace = ""
-    this.sub_domain = ""
+def get_version() {
+    if (!version) {
+        throw new RuntimeException("No version")
+    }
+    echo "# version: ${version}"
+    this.version
+}
 
-    // this cluster
-    load_variables()
+def set_values_home(values_home = "") {
+    this.values_home = values_home
+
+    echo "# values_home: ${values_home}"
 }
 
 def scan(source_lang = "") {
@@ -101,6 +128,7 @@ def env_cluster(cluster = "") {
     }
 
     sh """
+        rm -rf ${home}/.aws && mkdir -p ${home}/.aws && \
         rm -rf ${home}/.kube && mkdir -p ${home}/.kube
     """
 
@@ -114,7 +142,10 @@ def env_cluster(cluster = "") {
     }
 
     sh """
-        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.text | base64 -d > ${home}/.kube/config
+        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.aws | base64 -d > ${home}/aws_config
+        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.text | base64 -d > ${home}/kube_config
+        cp ${home}/aws_config ${home}/.aws/config && \
+        cp ${home}/kube_config ${home}/.kube/config
     """
 
     // check current context
@@ -158,32 +189,48 @@ def env_config(type = "", name = "", namespace = "") {
     }
 
     // check config
-    count = sh(script: "kubectl get ${type} -n ${namespace} | grep ${name}-${namespace} | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get ${type} -n ${namespace} | grep ${name} | wc -l", returnStdout: true).trim()
     if ("$count" == "0") {
         return "false"
     }
+
     return "true"
+
+    // // md5sum
+    // sum = sh(script: "kubectl get ${type} -n ${namespace} ${name} -o yaml | md5sum | awk '{printf \$1}'", returnStdout: true).trim()
+    // return sum
 }
 
-def make_chart() {
+def make_chart(path = "", latest = false) {
     if (!name) {
         echo "make_chart:name is null."
         throw new RuntimeException("name is null.")
     }
+    if (latest) {
+        echo "latest version scan"
+        app_version = scan_images_version(name, true)
+    } else {
+        app_version = version
+    }
     if (!version) {
         echo "make_chart:version is null."
         throw new RuntimeException("version is null.")
+
+    }
+    if (!path) {
+        path = "charts/${name}"
     }
 
-    if (!fileExists("charts/${name}")) {
+    if (!fileExists("${path}")) {
+        echo "no file ${path}"
         return
     }
 
-    dir("charts/${name}") {
+    dir("${path}") {
         sh """
             sed -i -e \"s/name: .*/name: ${name}/\" Chart.yaml && \
             sed -i -e \"s/version: .*/version: ${version}/\" Chart.yaml && \
-            sed -i -e \"s/tag: .*/tag: ${version}/g\" values.yaml
+            sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
         """
 
         if (registry) {
@@ -192,7 +239,7 @@ def make_chart() {
     }
 }
 
-def build_chart() {
+def build_chart(path = "") {
     if (!name) {
         echo "build_chart:name is null."
         throw new RuntimeException("name is null.")
@@ -200,6 +247,9 @@ def build_chart() {
     if (!version) {
         echo "build_chart:version is null."
         throw new RuntimeException("version is null.")
+    }
+    if (!path) {
+        path = "charts/${name}"
     }
 
     helm_init()
@@ -214,7 +264,7 @@ def build_chart() {
     }
 
     // helm push
-    dir("charts/${name}") {
+    dir("${path}") {
         sh "helm lint ."
 
         if (chartmuseum) {
@@ -245,7 +295,7 @@ def build_image() {
 
 def helm_init() {
     sh """
-        helm init --upgrade && \
+        helm init --client-only && \
         helm version
     """
 
@@ -292,7 +342,7 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
     }
 
     sh """
-        sed -i -e \"s|name: REPLACE-ME|name: ${name}-${namespace}|\" ${yaml_path}
+        sed -i -e \"s|name: REPLACE-ME|name: ${name}|\" ${yaml_path}
     """
 
     // cluster
@@ -306,7 +356,33 @@ def apply(cluster = "", namespace = "", type = "", yaml = "") {
     """
 }
 
-def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
+def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
+
+    // env cluster
+    env_cluster(cluster)
+
+    // env namespace
+    env_namespace(namespace)
+
+    // helm init
+    helm_init()
+
+    sh """
+        helm upgrade --install ${deploy_name} chartmuseum/${name} \
+            --namespace ${namespace} --devel \
+            --values ${values_path} \
+            --set namespace=${namespace} \
+            --set ingress.basedomain=${base_domain} \
+            --set profile=${profile} 
+    """
+
+    sh """
+        helm search ${name} && \
+        helm history ${name}-${namespace} --max 10
+    """
+}
+
+def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
     if (!name) {
         echo "deploy:name is null."
         throw new RuntimeException("name is null.")
@@ -341,43 +417,86 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
 
     this.sub_domain = sub_domain
 
-    // config (secret, configmap)
-    configmap = env_config("configmap", name, namespace)
-    secret = env_config("secret", name, namespace)
+    // config configmap
+    // configmap = env_config("configmap", name, namespace)
+    // configmap_enabled = "false"
+    // if (configmap_hash == "") {
+    //     configmap_enabled = "true"
+    // }
+
+    // config secret
+    // secret = env_config("secret", name, namespace)
+    // secret_enabled = "false"
+    // if (secret_hash != "") {
+    //     secret_enabled = "true"
+    // }
+
+    // extra_values (format = --set KEY=VALUE)
+    extra_values = ""
 
     // latest version
     if (version == "latest") {
         version = sh(script: "helm search chartmuseum/${name} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
-        if (!version) {
+        if (version == "") {
             echo "deploy:latest version is null."
             throw new RuntimeException("latest version is null.")
         }
     }
 
-    // latest pod count
-    desired = sh(script: "kubectl get deploy -n ${namespace} | grep ${name}-${namespace} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
-    if (desired == "") {
-        desired = 2
+    // Keep latest pod count
+    desired = sh(script: "kubectl get deploy -n ${namespace} | grep ${name} | head -1 | awk '{print \$3}'", returnStdout: true).trim()
+    if (desired != "") {
+        extra_values = "--set replicaCount=${desired}"
     }
 
-    // hpa min value
-    hpa_min = 2
-    if (cluster == "dev") {
-        hpa_min = 1
+    // values_path
+    if (!values_path) {
+        values_path = ""
+        if (values_home) {
+            count = sh(script: "ls ${values_home}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
+            if ("${count}" == "0") {
+                throw new RuntimeException("values_path not found.")
+            } else {
+                values_path = "${values_home}/${name}/${namespace}.yaml"
+            }
+        }
     }
 
-    sh """
-        helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
-                     --version ${version} --namespace ${namespace} --devel \
-                     --set fullnameOverride=${name}-${namespace} \
-                     --set ingress.basedomain=${base_domain} \
-                     --set ingress.subdomain=${sub_domain} \
-                     --set configmap.enabled=${configmap} \
-                     --set secret.enabled=${secret} \
-                     --set replicaCount=${desired} \
-                     --set hpa.min=${hpa_min} \
-                     --set profile=${profile}
-    """
+    // app-version: https://github.com/helm/helm/pull/5492
+
+    if (values_path) {
+
+        // helm install
+        sh """
+            helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
+                --version ${version} --namespace ${namespace} --devel \
+                --values ${values_path} \
+                --set namespace=${namespace} \
+                --set profile=${profile} \
+                ${extra_values}
+        """
+        // --app-version ${version} \
+        // --set configmap.enabled=${configmap} \
+        // --set secret.enabled=${secret} \
+
+    } else {
+
+        // helm install
+        sh """
+            helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
+                --version ${version} --namespace ${namespace} --devel \
+                --set fullnameOverride=${name} \
+                --set ingress.subdomain=${sub_domain} \
+                --set ingress.basedomain=${base_domain} \
+                --set namespace=${namespace} \
+                --set profile=${profile} \
+                ${extra_values}
+        """
+        // --app-version ${version} \
+        // --set configmap.enabled=${configmap} \
+        // --set secret.enabled=${secret} \
+
+    }
 
     sh """
         helm search ${name} && \
@@ -396,9 +515,49 @@ def scan_helm(cluster = "", namespace = "") {
     // admin can scan all images,
     // others can scan own images.
     if (!namespace) {
-      list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
+        list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
     } else {
-      list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
+        list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
+    }
+    list
+}
+
+def scan_images() {
+    if (!chartmuseum) {
+        load_variables()
+    }
+    list = sh(script: "curl -X GET https://${registry}/v2/_catalog | jq -r '.repositories[]'", returnStdout: true).trim()
+    list
+}
+
+def scan_images_version(image_name = "", latest = false) {
+    if (!chartmuseum) {
+        load_variables()
+    }
+    if(latest) {
+      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | sort -r | head -n 1", returnStdout: true).trim()
+    } else {
+      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | sort -r", returnStdout: true).trim()
+    }
+    list
+}
+
+def scan_charts() {
+    if (!chartmuseum) {
+        load_variables()
+    }
+    list = sh(script: "curl https://${chartmuseum}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
+    list
+}
+
+def scan_charts_version(mychart = "", latest = false) {
+    if (!chartmuseum) {
+        load_variables()
+    }
+    if (latest) {
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | sort -r | head -n 1", returnStdout: true).trim()
+    } else {
+      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | sort -r", returnStdout: true).trim()
     }
     list
 }
@@ -605,8 +764,7 @@ def send(token = "", color = "", title = "", message = "", footer = "") {
     try {
         if (token) {
             sh """
-                curl -sL repo.opsnow.io/valve-ctl/slack | bash -s -- \
-                --token=\'${token}\' \
+                curl -sL repo.opsnow.io/valve-ctl/slack | bash -s -- --token=\'${token}\' \
                 --footer=\'$footer\' --footer_icon='https://jenkins.io/sites/default/files/jenkins_favicon.ico' \
                 --color=\'${color}\' --title=\'${title}\' \'${message}\'
             """

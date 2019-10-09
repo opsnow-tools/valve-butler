@@ -122,7 +122,7 @@ def scan_langusge(target = "", target_lang = "") {
 }
 
 def env_cluster(cluster = "") {
-    if (!cluster) {
+    if (!cluster || "${cluster}" == "here") {
         // throw new RuntimeException("env_cluster:cluster is null.")
         return
     }

@@ -778,4 +778,59 @@ def send(token = "", color = "", title = "", message = "", footer = "") {
     }
 }
 
+//-------------------------------------
+// Terraform
+//-------------------------------------
+
+def terraform_init(cluster = "", path = "") {
+    if (!cluster) {
+        echo "failure:cluster is null."
+        throw new RuntimeException("cluster is null.")
+    }
+    if (!path) {
+        echo "failure:path is null."
+        throw new RuntimeException("path is null.")
+    }
+
+    env_cluster(cluster)
+
+    dir("${path}") {
+        sh """
+            terraform init
+        """
+    }
+}
+
+def terraform_check_changes(cluster = "", path = "") {
+    terraform_init(cluster, path)
+
+    dir("${path}") {
+        changed = sh (
+            script: "terraform plan | grep Plan",
+            returnStatus: true
+        ) == 0
+
+        if (!changed) {
+            echo "No changes. Infrastructure is up-to-date."
+            throw new RuntimeException("No changes. Infrastructure is up-to-date.")
+        }
+    }
+}
+
+def terraform_apply(cluster = "", path = "") {
+    terraform_init(cluster, path)
+
+    dir("${path}") {
+        applied = sh (
+            script: "terraform apply -auto-approve",
+            returnStatus: true
+        ) == 0
+
+        if (!applied) {
+            echo "Apply failed!"
+            throw new RuntimeException("Apply failed!")
+        }
+    }
+}
+
 return this

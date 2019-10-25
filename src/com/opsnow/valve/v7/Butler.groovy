@@ -179,8 +179,9 @@ def env_aws(target = "") {
 
     sh """
         kubectl get secret aws-config-${target} -n devops -o json | jq -r .data.config | base64 -d > ${home}/aws_config
-        cat ${home}/aws_config
+        kubectl get secret aws-config-${target} -n devops -o json | jq -r .data.credentials | base64 -d > ${home}/aws_credentials
         cp ${home}/aws_config ${home}/.aws/config
+        cp ${home}/aws_credentials ${home}/.aws/credentials
     """
 }
 
@@ -821,7 +822,6 @@ def terraform_init(cluster = "", path = "") {
 
     dir("${path}") {
         sh """
-            cat main.tf
             terraform init
         """
     }

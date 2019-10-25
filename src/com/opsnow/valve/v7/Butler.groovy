@@ -824,7 +824,7 @@ def terraform_init(cluster = "", path = "") {
         if (fileExists(".terraform")) {
             sh """
                 rm -rf .terraform
-                terraform init
+                terraform init -no-color
             """
         } else {
             sh """
@@ -842,7 +842,7 @@ def terraform_check_changes(cluster = "", path = "") {
             terraform plan -no-color
         """
         changed = sh (
-            script: "terraform plan | grep Plan",
+            script: "terraform plan -no-color | grep Plan",
             returnStatus: true
         ) == 0
 

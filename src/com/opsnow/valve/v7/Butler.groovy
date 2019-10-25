@@ -839,7 +839,7 @@ def terraform_check_changes(cluster = "", path = "") {
 
     dir("${path}") {
         changed = sh (
-            script: "rm -rf .terraform && terraform plan | grep Plan",
+            script: "terraform plan | grep Plan",
             returnStatus: true
         ) == 0
 

@@ -159,6 +159,30 @@ def env_cluster(cluster = "") {
     load_variables()
 }
 
+def env_aws(target = "") {
+    if (!target || "${target}" == "here") {
+        throw new RuntimeException("env_target:target is null.")
+    }
+
+    sh """
+        rm -rf ${home}/.aws && mkdir -p ${home}/.aws
+    """
+
+    this.target = target
+
+    // check target secret
+    count = sh(script: "kubectl get secret -n devops | grep 'aws-config-${target}' | wc -l", returnStdout: true).trim()
+    if ("${count}" == "0") {
+        echo "env_target:target is null."
+        throw new RuntimeException("target is null.")
+    }
+
+    sh """
+        kubectl get secret kube-config-${target} -n devops -o json | jq -r .data.config | base64 -d > ${target}/aws_config
+        cp ${home}/aws_config ${home}/.aws/config
+    """
+}
+
 def env_namespace(namespace = "") {
     if (!namespace) {
         echo "env_namespace:namespace is null."
@@ -792,7 +816,7 @@ def terraform_init(cluster = "", path = "") {
         throw new RuntimeException("path is null.")
     }
 
-    env_cluster(cluster)
+    env_aws(cluster)
 
     dir("${path}") {
         sh """

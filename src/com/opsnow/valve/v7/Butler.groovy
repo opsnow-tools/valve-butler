@@ -178,7 +178,7 @@ def env_aws(target = "") {
     }
 
     sh """
-        kubectl get secret kube-config-${target} -n devops -o json | jq -r .data.config | base64 -d > ${target}/aws_config
+        kubectl get secret aws-config-${target} -n devops -o json | jq -r .data.config | base64 -d > ${target}/aws_config
         cp ${home}/aws_config ${home}/.aws/config
     """
 }

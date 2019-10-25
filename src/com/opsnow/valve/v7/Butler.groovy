@@ -828,7 +828,7 @@ def terraform_init(cluster = "", path = "") {
             """
         } else {
             sh """
-                terraform init
+                terraform init -no-color
             """
         }
     }
@@ -839,7 +839,7 @@ def terraform_check_changes(cluster = "", path = "") {
 
     dir("${path}") {
         sh """
-            terraform plan
+            terraform plan -no-color
         """
         changed = sh (
             script: "terraform plan | grep Plan",

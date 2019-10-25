@@ -821,9 +821,16 @@ def terraform_init(cluster = "", path = "") {
     env_aws(cluster)
 
     dir("${path}") {
-        sh """
-            terraform init
-        """
+        if (fileExists(".terraform")) {
+            sh """
+                rm -rf .terraform
+                terraform init
+            """
+        } else {
+            sh """
+                terraform init
+            """
+        }
     }
 }
 
@@ -832,7 +839,7 @@ def terraform_check_changes(cluster = "", path = "") {
 
     dir("${path}") {
         changed = sh (
-            script: "terraform plan | grep Plan",
+            script: "rm -rf .terraform && terraform plan | grep Plan",
             returnStatus: true
         ) == 0
 

@@ -838,6 +838,9 @@ def terraform_check_changes(cluster = "", path = "") {
     terraform_init(cluster, path)
 
     dir("${path}") {
+        sh """
+            terraform plan
+        """
         changed = sh (
             script: "terraform plan | grep Plan",
             returnStatus: true

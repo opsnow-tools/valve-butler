@@ -876,7 +876,7 @@ def terraform_apply(cluster = "", path = "") {
 def checkout_pipeline(credentials_id="", git_url = "") {
     sshagent (credentials: [credentials_id]) {
         cloned = sh (
-            script: "git clone ${git_url}",
+            script: "printenv; ssh-add -l; git clone ${git_url}",
             returnStatus: true
         ) == 0
 
@@ -912,7 +912,7 @@ def create_pull_request(credentials_id="", path = "", site = "", profile = "", j
     dir("${path}") {
         sshagent (credentials: [credentials_id]) {
             created = sh (
-                script: "./builder.sh ${site} ${profile} ${job} ${image}",
+                script: "printenv; ssh-add -l;  ./builder.sh ${site} ${profile} ${job} ${image}",
                 returnStatus: true
             ) == 0
 

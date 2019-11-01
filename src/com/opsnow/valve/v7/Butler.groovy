@@ -874,7 +874,7 @@ def terraform_apply(cluster = "", path = "") {
 //-------------------------------------
 
 def checkout_pipeline(credentials_id="", git_url = "") {
-    sshagent (credentials: [${credentials_id}]) {
+    sshagent (credentials: [credentials_id]) {
         cloned = sh (
             script: "git clone ${git_url}",
             returnStatus: true
@@ -887,7 +887,7 @@ def checkout_pipeline(credentials_id="", git_url = "") {
     }
 }
 
-def create_pull_request(path = "", site = "", profile = "", job = "", image = "") {
+def create_pull_request(credentials_id="", path = "", site = "", profile = "", job = "", image = "") {
     if (!path) {
         echo "failure:path is null."
         throw new RuntimeException("path is null.")
@@ -910,7 +910,7 @@ def create_pull_request(path = "", site = "", profile = "", job = "", image = ""
     }
 
     dir("${path}") {
-        sshagent (credentials: [${credentials_id}]) {
+        sshagent (credentials: [credentials_id]) {
             created = sh (
                 script: "./builder.sh ${site} ${profile} ${job} ${image}",
                 returnStatus: true

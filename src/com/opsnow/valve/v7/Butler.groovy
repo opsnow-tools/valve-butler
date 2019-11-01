@@ -869,4 +869,60 @@ def terraform_apply(cluster = "", path = "") {
     }
 }
 
+//-------------------------------------
+// Pull Request for Version Update
+//-------------------------------------
+
+def checkout_pipeline(credentials_id="", git_url = "") {
+    sshagent (credentials: [${credentials_id}]) {
+        cloned = sh (
+            script: "git clone ${git_url}",
+            returnStatus: true
+        ) == 0
+
+        if (!cloned) {
+            echo "Clone failed!"
+            throw new RuntimeException("Clone failed!")
+        }
+    }
+}
+
+def create_pull_request(path = "", site = "", profile = "", job = "", image = "") {
+    if (!path) {
+        echo "failure:path is null."
+        throw new RuntimeException("path is null.")
+    }
+    if (!site) {
+        echo "failure:site is null."
+        throw new RuntimeException("site is null.")
+    }
+    if (!profile) {
+        echo "failure:profile is null."
+        throw new RuntimeException("profile is null.")
+    }
+    if (!job) {
+        echo "failure:job is null."
+        throw new RuntimeException("job is null.")
+    }
+
+    if (!image) {
+        image = "${registry}/${name}:${version}"
+    }
+
+    dir("${path}") {
+        sshagent (credentials: [${credentials_id}]) {
+            created = sh (
+                script: "./builder.sh ${site} ${profile} ${job} ${image}",
+                returnStatus: true
+            ) == 0
+
+            if (!created) {
+                echo "Version Update PR failed!"
+                throw new RuntimeException("Version Update PR failed!")
+            }
+        }
+    }
+}
+
+
 return this

@@ -681,6 +681,20 @@ def npm_test(source_root = "") {
     }
 }
 
+def gradle_build(source_root = "") {
+    source_root = get_source_root(source_root)
+    dir("${source_root}") {
+        sh "gradle task bootjar"
+    }
+}
+
+def gradle_deploy(source_root = "") {
+    source_root = get_source_root(source_root)
+    dir("${source_root}") {
+        sh "gradle task publish"
+    }
+}
+
 def mvn_build(source_root = "") {
     source_root = get_source_root(source_root)
     dir("${source_root}") {

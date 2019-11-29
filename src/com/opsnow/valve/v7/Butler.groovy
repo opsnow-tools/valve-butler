@@ -542,8 +542,8 @@ def scan_helm(cluster = "", namespace = "") {
     // others can scan own images.
     if (!namespace) {
         list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
-        list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
     } else {
+        list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
     }
     list
 }

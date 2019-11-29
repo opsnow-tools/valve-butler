@@ -1,7 +1,21 @@
 #!/usr/bin/groovy
 package com.opsnow.valve;
 
+def old_version() {
+    // throw new RuntimeException("This valve-butler is too old.")
+
+    echo "###################################################"
+    echo "###################################################"
+    echo " "
+    echo "##        This valve-butler is too old.        ##"
+    echo " "
+    echo "###################################################"
+    echo "###################################################"
+}
+
 def prepare(namespace = "devops") {
+    old_version()
+
     sh """
         kubectl get secret groovy-variables -n $namespace -o json | jq -r .data.groovy | base64 -d > $home/Variables.groovy && \
         cat $home/Variables.groovy | grep def
@@ -91,6 +105,8 @@ def scan_langusge(target = "", source_lang = "") {
 }
 
 def env_cluster(cluster = "", namespace = "devops") {
+    old_version()
+
     if (!cluster) {
         // throw new RuntimeException("env_cluster:cluster is null.")
         return
@@ -279,6 +295,8 @@ def build_image(name = "", version = "") {
 }
 
 def helm_init() {
+    old_version()
+
     sh """
         helm init --upgrade && \
         helm version
@@ -367,6 +385,8 @@ def helm_install(name = "", version = "", namespace = "", base_domain = "", clus
         helm search $name && \
         helm history $name-$namespace --max 10
     """
+
+    old_version()
 }
 
 def helm_delete(name = "", namespace = "", cluster = "") {

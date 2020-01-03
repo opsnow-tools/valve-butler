@@ -122,7 +122,7 @@ def scan_langusge(target = "", target_lang = "") {
 }
 
 def env_cluster(cluster = "") {
-    if (!cluster) {
+    if (!cluster || "${cluster}" == "here") {
         // throw new RuntimeException("env_cluster:cluster is null.")
         return
     }
@@ -157,6 +157,32 @@ def env_cluster(cluster = "") {
 
     // target cluster
     load_variables()
+}
+
+def env_aws(target = "") {
+    if (!target || "${target}" == "here") {
+        throw new RuntimeException("env_target:target is null.")
+    }
+
+    sh """
+        rm -rf ${home}/.aws && mkdir -p ${home}/.aws
+    """
+
+    this.target = target
+
+    // check target secret
+    count = sh(script: "kubectl get secret -n devops | grep 'aws-config-${target}' | wc -l", returnStdout: true).trim()
+    if ("${count}" == "0") {
+        echo "env_target:target is null."
+        throw new RuntimeException("target is null.")
+    }
+
+    sh """
+        kubectl get secret aws-config-${target} -n devops -o json | jq -r .data.config | base64 -d > ${home}/aws_config
+        kubectl get secret aws-config-${target} -n devops -o json | jq -r .data.credentials | base64 -d > ${home}/aws_credentials
+        cp ${home}/aws_config ${home}/.aws/config
+        cp ${home}/aws_credentials ${home}/.aws/credentials
+    """
 }
 
 def env_namespace(namespace = "") {
@@ -655,6 +681,20 @@ def npm_test(source_root = "") {
     }
 }
 
+def gradle_build(source_root = "") {
+    source_root = get_source_root(source_root)
+    dir("${source_root}") {
+        sh "gradle task bootjar"
+    }
+}
+
+def gradle_deploy(source_root = "") {
+    source_root = get_source_root(source_root)
+    dir("${source_root}") {
+        sh "gradle task publish"
+    }
+}
+
 def mvn_build(source_root = "") {
     source_root = get_source_root(source_root)
     dir("${source_root}") {
@@ -680,6 +720,10 @@ def mvn_deploy(source_root = "") {
 }
 
 def mvn_sonar(source_root = "", sonarqube = "") {
+    //if (!sonar_token) {
+    //  echo "sonar token is null. Check secret text 'sonar-token' in credentials"
+    //  throw new RuntimeException("sonar token is null.")
+    //}
     if (!sonarqube) {
         if (!this.sonarqube) {
             echo "mvn_sonar:sonarqube is null."
@@ -773,5 +817,126 @@ def send(token = "", color = "", title = "", message = "", footer = "") {
     } catch (ignored) {
     }
 }
+
+//-------------------------------------
+// Terraform
+//-------------------------------------
+
+def terraform_init(cluster = "", path = "") {
+    if (!cluster) {
+        echo "failure:cluster is null."
+        throw new RuntimeException("cluster is null.")
+    }
+    if (!path) {
+        echo "failure:path is null."
+        throw new RuntimeException("path is null.")
+    }
+
+    env_aws(cluster)
+
+    dir("${path}") {
+        if (fileExists(".terraform")) {
+            sh """
+                rm -rf .terraform
+                terraform init -no-color
+            """
+        } else {
+            sh """
+                terraform init -no-color
+            """
+        }
+    }
+}
+
+def terraform_check_changes(cluster = "", path = "") {
+    terraform_init(cluster, path)
+
+    dir("${path}") {
+        sh """
+            terraform plan -no-color
+        """
+        changed = sh (
+            script: "terraform plan -no-color | grep Plan",
+            returnStatus: true
+        ) == 0
+
+        if (!changed) {
+            echo "No changes. Infrastructure is up-to-date."
+            throw new RuntimeException("No changes. Infrastructure is up-to-date.")
+        }
+    }
+}
+
+def terraform_apply(cluster = "", path = "") {
+    terraform_init(cluster, path)
+
+    dir("${path}") {
+        applied = sh (
+            script: "terraform apply -auto-approve",
+            returnStatus: true
+        ) == 0
+
+        if (!applied) {
+            echo "Apply failed!"
+            throw new RuntimeException("Apply failed!")
+        }
+    }
+}
+
+//-------------------------------------
+// Pull Request for Version Update
+//-------------------------------------
+
+def checkout_pipeline(credentials_id="", git_url = "") {
+    sshagent (credentials: [credentials_id]) {
+        cloned = sh (
+            script: "printenv; ssh-add -l; git clone ${git_url}",
+            returnStatus: true
+        ) == 0
+
+        if (!cloned) {
+            echo "Clone failed!"
+            throw new RuntimeException("Clone failed!")
+        }
+    }
+}
+
+def create_pull_request(credentials_id="", path = "", site = "", profile = "", job = "", image = "") {
+    if (!path) {
+        echo "failure:path is null."
+        throw new RuntimeException("path is null.")
+    }
+    if (!site) {
+        echo "failure:site is null."
+        throw new RuntimeException("site is null.")
+    }
+    if (!profile) {
+        echo "failure:profile is null."
+        throw new RuntimeException("profile is null.")
+    }
+    if (!job) {
+        echo "failure:job is null."
+        throw new RuntimeException("job is null.")
+    }
+
+    if (!image) {
+        image = "${registry}/${name}:${version}"
+    }
+
+    dir("${path}") {
+        sshagent (credentials: [credentials_id]) {
+            created = sh (
+                script: "printenv; ssh-add -l;  ./builder.sh ${site} ${profile} ${job} ${image}",
+                returnStatus: true
+            ) == 0
+
+            if (!created) {
+                echo "Version Update PR failed!"
+                throw new RuntimeException("Version Update PR failed!")
+            }
+        }
+    }
+}
+
 
 return this

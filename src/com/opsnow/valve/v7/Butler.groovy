@@ -681,6 +681,19 @@ def npm_test(source_root = "") {
     }
 }
 
+def npm_sonar(source_root = "", sonarqube = "") {
+  if (!sonarqube) {
+        if (!this.sonarqube) {
+            echo "npm_sonar:sonarqube is null."
+            throw new RuntimeException("sonarqube is null.")
+        }
+        sonarqube = "https://${this.sonarqube}"
+    }
+    withCredentials([string(credentialsId: 'sonar-token', variable: 'sonar_token')]){
+      source_root = get_source_root(source_root)
+    }
+}
+
 def gradle_build(source_root = "") {
     source_root = get_source_root(source_root)
     dir("${source_root}") {

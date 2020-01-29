@@ -476,7 +476,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
       desired = sh(script: "kubectl get deploy -n ${namespace} | grep ${name} | head -1 | awk '{print \$3}'", returnStdout: true).trim()
     }
     if (desired != "") {
-        extra_values = "--set replicaCount=${desired}"
+        extra_values = "--set replicaCount=${replicaCount}"
     }
 
     // values_path

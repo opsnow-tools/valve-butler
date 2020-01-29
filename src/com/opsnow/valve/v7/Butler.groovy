@@ -478,7 +478,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
     // if (desired != "") {
     //     extra_values = "--set replicaCount=${replicaCount}"
     // }
-    extra_values = "--set replicaCount=${replicaCount}"
+    // extra_values = "--set replicaCount=${replicaCount}"
 
     // values_path
     if (!values_path) {

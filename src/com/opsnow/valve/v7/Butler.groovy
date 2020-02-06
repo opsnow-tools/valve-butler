@@ -324,6 +324,7 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
           ).trim()
       sh "${ECR_LOGIN}"
 
+      sh "aws ecr create-repository --repository-name opsnow/${name}"
       sh "docker build -t ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version} ."
       sh "docker push ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version}"
 

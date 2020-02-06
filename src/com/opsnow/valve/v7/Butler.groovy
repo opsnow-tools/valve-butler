@@ -324,7 +324,7 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
           ).trim()
       sh "${ECR_LOGIN}"
 
-      sh "docker build -t ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version}"
+      sh "docker build -t ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version} ."
       sh "docker push ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version}"
 
     } else {

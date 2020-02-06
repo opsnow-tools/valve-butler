@@ -259,8 +259,6 @@ def make_chart(path = "", latest = false) {
             sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
         """
 
-        echo "error?"
-        echo "${registry}"
         if (registry) {
             sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
         }

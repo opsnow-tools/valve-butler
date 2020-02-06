@@ -259,6 +259,8 @@ def make_chart(path = "", latest = false) {
             sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
         """
 
+        echo "error?"
+        echo "${registry}"
         if (registry) {
             sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
         }
@@ -306,6 +308,20 @@ def build_chart(path = "") {
 }
 
 def build_image() {
+    if (!name) {
+        echo "build_image:name is null."
+        throw new RuntimeException("name is null.")
+    }
+    if (!version) {
+        echo "build_image:version is null."
+        throw new RuntimeException("version is null.")
+    }
+
+    sh "docker build -t ${registry}/${name}:${version} ."
+    sh "docker push ${registry}/${name}:${version}"
+}
+
+def build_image(registry = "${registry}") {
     if (!name) {
         echo "build_image:name is null."
         throw new RuntimeException("name is null.")

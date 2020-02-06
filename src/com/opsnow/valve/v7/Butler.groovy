@@ -321,20 +321,6 @@ def build_image() {
     sh "docker push ${registry}/${name}:${version}"
 }
 
-def build_image(registry = "${registry}") {
-    if (!name) {
-        echo "build_image:name is null."
-        throw new RuntimeException("name is null.")
-    }
-    if (!version) {
-        echo "build_image:version is null."
-        throw new RuntimeException("version is null.")
-    }
-
-    sh "docker build -t ${registry}/${name}:${version} ."
-    sh "docker push ${registry}/${name}:${version}"
-}
-
 def helm_init() {
     sh """
         helm init --client-only && \

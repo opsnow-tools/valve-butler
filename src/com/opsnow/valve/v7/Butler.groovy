@@ -305,7 +305,7 @@ def build_chart(path = "") {
     """
 }
 
-def build_image() {
+def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account = "") {
     if (!name) {
         echo "build_image:name is null."
         throw new RuntimeException("name is null.")
@@ -315,8 +315,22 @@ def build_image() {
         throw new RuntimeException("version is null.")
     }
 
-    sh "docker build -t ${registry}/${name}:${version} ."
-    sh "docker push ${registry}/${name}:${version}"
+    if(ecr) {
+      sh "export AWS_ACCESS_KEY_ID=${accesskey}"
+      sh "export AWS_SECRET_ACCESS_KEY=${secretkey}"
+      ECR_LOGIN = sh(
+          script: 'aws ecr get-login --region ${region} --no-include-email',
+          returnStdout: true
+          ).trim()
+      sh "${ECR_LOGIN}"
+
+      sh "docker build -t ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version}"
+      sh "docker push ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version}"
+
+    } else {
+      sh "docker build -t ${registry}/${name}:${version} ."
+      sh "docker push ${registry}/${name}:${version}"
+    }
 }
 
 def helm_init() {

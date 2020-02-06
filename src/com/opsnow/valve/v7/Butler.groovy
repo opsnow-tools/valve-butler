@@ -319,7 +319,7 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
       sh "export AWS_ACCESS_KEY_ID=${accesskey}"
       sh "export AWS_SECRET_ACCESS_KEY=${secretkey}"
       ECR_LOGIN = sh(
-          script: 'aws ecr get-login --region ${region} --no-include-email',
+          script: "aws ecr get-login --region ${region} --no-include-email",
           returnStdout: true
           ).trim()
       sh "${ECR_LOGIN}"

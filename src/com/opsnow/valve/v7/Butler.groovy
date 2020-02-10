@@ -329,7 +329,7 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
     if(ecr) {
 
       docker.withRegistry("https://${account}.dkr.ecr.${region}.amazonaws.com", "ecr:${region}:${credential}") {
-        def customImage = docker.build("${name}:${version}")
+        def customImage = docker.build("opsnow/${name}:${version}")
         customImage.push()
       }
 //      sh "export AWS_ACCESS_KEY_ID=${accesskey}"

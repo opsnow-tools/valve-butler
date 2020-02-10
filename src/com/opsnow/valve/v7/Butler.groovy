@@ -332,6 +332,7 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
         def customImage = docker.build("opsnow/${name}:${version}")
         customImage.push()
       }
+      set_repo_ver("${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}", "${version}")
 //      sh "export AWS_ACCESS_KEY_ID=${accesskey}"
 //      sh "export AWS_SECRET_ACCESS_KEY=${secretkey}"
 //      ECR_LOGIN = sh(

@@ -316,7 +316,7 @@ def build_chart(path = "") {
     """
 }
 
-def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account = "") {
+def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account = "", credential = "") {
     if (!name) {
         echo "build_image:name is null."
         throw new RuntimeException("name is null.")
@@ -328,7 +328,7 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
 
     if(ecr) {
 
-      docker.withRegistry("https://${account}.dkr.ecr.${region}.amazonaws.com", 'sre-jj-AP_NORTHEAST_2') {
+      docker.withRegistry("https://${account}.dkr.ecr.${region}.amazonaws.com", "${credential}") {
         def customImage = docker.build("${name}:${version}")
         customImage.push()
       }

@@ -327,20 +327,25 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
     }
 
     if(ecr) {
-      sh "export AWS_ACCESS_KEY_ID=${accesskey}"
-      sh "export AWS_SECRET_ACCESS_KEY=${secretkey}"
-      ECR_LOGIN = sh(
-          script: "aws ecr get-login --region ${region} --no-include-email",
-          returnStdout: true
-          ).trim()
-      sh "${ECR_LOGIN}"
 
-      try {
-        sh "aws ecr create-repository --region ${region} --repository-name opsnow/${name}"
-      } catch (ignored) {
+      docker.withRegistry("https://${account}.dkr.ecr.${region}.amazonaws.com", 'sre-jj-AP_NORTHEAST_2') {
+        def customImage = docker.build("${name}:${version}")
+        customImage.push()
       }
-      sh "docker build -t ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version} ."
-      sh "docker push ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version}"
+//      sh "export AWS_ACCESS_KEY_ID=${accesskey}"
+//      sh "export AWS_SECRET_ACCESS_KEY=${secretkey}"
+//      ECR_LOGIN = sh(
+//          script: "aws ecr get-login --region ${region} --no-include-email",
+//          returnStdout: true
+//          ).trim()
+//      sh "${ECR_LOGIN}"
+//
+//      try {
+//        sh "aws ecr create-repository --region ${region} --repository-name opsnow/${name}"
+//      } catch (ignored) {
+//      }
+//      sh "docker build -t ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version} ."
+//      sh "docker push ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version}"
 
     } else {
       sh "docker build -t ${registry}/${name}:${version} ."

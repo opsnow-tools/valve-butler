@@ -328,7 +328,7 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
 
     if(ecr) {
 
-      docker.withRegistry("https://${account}.dkr.ecr.${region}.amazonaws.com", "${credential}") {
+      docker.withRegistry("https://${account}.dkr.ecr.${region}.amazonaws.com", "ecr:${region}:${credential}") {
         def customImage = docker.build("${name}:${version}")
         customImage.push()
       }

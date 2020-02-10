@@ -229,13 +229,12 @@ def env_config(type = "", name = "", namespace = "") {
 
 def set_repo_ver(repo = "", ver = "") {
 
-  if (!path) {
-      path = "charts/${name}"
-  }
-  dir("${path}") {
-    sh "sed -i -e \"s|repository: .*|repository: ${repo}|\" values.yaml"
-    sh "sed -i -e \"s/tag: .*/tag: ${ver}/g\" values.yaml"
-  }
+    def path = "charts/${name}"
+
+    dir("${path}") {
+      sh "sed -i -e \"s|repository: .*|repository: ${repo}|\" values.yaml"
+      sh "sed -i -e \"s/tag: .*/tag: ${ver}/g\" values.yaml"
+    }
 
 }
 

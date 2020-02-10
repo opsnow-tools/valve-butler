@@ -227,13 +227,6 @@ def env_config(type = "", name = "", namespace = "") {
     // return sum
 }
 
-def set_version(version = "") {
-  if (!version) {
-    this.version = "latest"
-  } else {
-    this.version = version
-  }
-}
 def set_registry(ecr = "") {
 
   this.registry = ecr

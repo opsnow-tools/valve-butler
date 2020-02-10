@@ -227,9 +227,10 @@ def env_config(type = "", name = "", namespace = "") {
     // return sum
 }
 
-def set_registry(ecr = "") {
+def set_repo_ver(repo = "", ver = "") {
 
-  this.registry = ecr
+  sh "sed -i -e \"s|repository: .*|repository: ${repo}|\" values.yaml"
+  sh "sed -i -e \"s/tag: .*/tag: ${ver}/g\" values.yaml"
 
 }
 

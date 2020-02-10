@@ -227,6 +227,12 @@ def env_config(type = "", name = "", namespace = "") {
     // return sum
 }
 
+def set_registry(ecr = "") {
+
+  this.registry = ecr
+
+}
+
 def make_chart(path = "", latest = false) {
     if (!name) {
         echo "make_chart:name is null."

@@ -321,7 +321,7 @@ def build_chart(path = "") {
     """
 }
 
-def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account = "", credential = "") {
+def build_image() {
     if (!name) {
         echo "build_image:name is null."
         throw new RuntimeException("name is null.")

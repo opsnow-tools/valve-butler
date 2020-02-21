@@ -298,6 +298,11 @@ def build_chart(path = "") {
             helm plugin install https://github.com/chartmuseum/helm-push && \
             helm plugin list
         """
+    } else {
+        sh """
+            helm plugin update push && \
+            helm plugin list
+        """
     }
 
     // helm push

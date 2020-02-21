@@ -227,17 +227,6 @@ def env_config(type = "", name = "", namespace = "") {
     // return sum
 }
 
-def set_repo_ver(repo = "", ver = "") {
-
-    def path = "charts/${name}"
-
-    dir("${path}") {
-      sh "sed -i -e \"s|repository: .*|repository: ${repo}|\" values.yaml"
-      sh "sed -i -e \"s/tag: .*/tag: ${ver}/g\" values.yaml"
-    }
-
-}
-
 def make_chart(path = "", latest = false) {
     if (!name) {
         echo "make_chart:name is null."

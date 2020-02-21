@@ -331,32 +331,8 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
         throw new RuntimeException("version is null.")
     }
 
-    if(ecr) {
-
-      docker.withRegistry("https://${account}.dkr.ecr.${region}.amazonaws.com", "ecr:${region}:${credential}") {
-        def customImage = docker.build("opsnow/${name}:${version}")
-        customImage.push()
-      }
-      set_repo_ver("${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}", "${version}")
-//      sh "export AWS_ACCESS_KEY_ID=${accesskey}"
-//      sh "export AWS_SECRET_ACCESS_KEY=${secretkey}"
-//      ECR_LOGIN = sh(
-//          script: "aws ecr get-login --region ${region} --no-include-email",
-//          returnStdout: true
-//          ).trim()
-//      sh "${ECR_LOGIN}"
-//
-//      try {
-//        sh "aws ecr create-repository --region ${region} --repository-name opsnow/${name}"
-//      } catch (ignored) {
-//      }
-//      sh "docker build -t ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version} ."
-//      sh "docker push ${account}.dkr.ecr.${region}.amazonaws.com/opsnow/${name}:${version}"
-
-    } else {
-      sh "docker build -t ${registry}/${name}:${version} ."
-      sh "docker push ${registry}/${name}:${version}"
-    }
+    sh "docker build -t ${registry}/${name}:${version} ."
+    sh "docker push ${registry}/${name}:${version}"
 }
 
 def helm_init() {

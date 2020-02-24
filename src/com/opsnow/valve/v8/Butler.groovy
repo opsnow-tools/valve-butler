@@ -331,8 +331,12 @@ def build_image(ecr = "", accesskey = "", secretkey = "", region = "", account =
         throw new RuntimeException("version is null.")
     }
 
-    sh "docker build -t harbor-devops.dev.opsnow.com/harborsample/${name}:${version} ."
-    sh "docker push harbor-devops.dev.opsnow.com/harborsample/${name}:${version}"
+    docker.withRegistry("https://harbor-devops.dev.opsnow.com", "HarborAdmin") {
+        sh "docker build -t harbor-devops.dev.opsnow.com/harborsample/${name}:${version} ."
+        sh "docker push harbor-devops.dev.opsnow.com/harborsample/${name}:${version}"
+
+    }
+
 
 //     if(ecr) {
 

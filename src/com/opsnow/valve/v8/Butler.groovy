@@ -29,7 +29,7 @@ def set_version(version = "") {
     // version
     if (!version) {
         date = (new Date()).format('yyyyMMdd.HHmm')
-        version = "v0.0.1+${date}"
+        version = "v0.0.1_${date}"
     }
 
     this.version = version

@@ -20,6 +20,7 @@ def prepare(name = "sample", version = "") {
     this.namespace = ""
     this.sub_domain = ""
     this.values_home = ""
+    this.ecr_registry = ""
 
     // this cluster
     load_variables()
@@ -75,6 +76,11 @@ def set_sonarqube(param = "") {
 def set_nexus(param = "") {
     this.nexus = param
 }
+
+def set_ecr_registry(param = "") {
+    this.ecr_registry = param
+}
+
 
 def load_variables() {
     // groovy variables
@@ -165,32 +171,6 @@ def env_cluster(cluster = "") {
     load_variables()
 }
 
-def env_aws(target = "") {
-    if (!target || "${target}" == "here") {
-        throw new RuntimeException("env_target:target is null.")
-    }
-
-    sh """
-        rm -rf ${home}/.aws && mkdir -p ${home}/.aws
-    """
-
-    this.target = target
-
-    // check target secret
-    count = sh(script: "kubectl get secret -n devops | grep 'aws-config-${target}' | wc -l", returnStdout: true).trim()
-    if ("${count}" == "0") {
-        echo "env_target:target is null."
-        throw new RuntimeException("target is null.")
-    }
-
-    sh """
-        kubectl get secret aws-config-${target} -n devops -o json | jq -r .data.config | base64 -d > ${home}/aws_config
-        kubectl get secret aws-config-${target} -n devops -o json | jq -r .data.credentials | base64 -d > ${home}/aws_credentials
-        cp ${home}/aws_config ${home}/.aws/config
-        cp ${home}/aws_credentials ${home}/.aws/credentials
-    """
-}
-
 def env_namespace(namespace = "") {
     if (!namespace) {
         echo "env_namespace:namespace is null."
@@ -204,44 +184,6 @@ def env_namespace(namespace = "") {
     if ("$count" == "0") {
         sh "kubectl create namespace ${namespace}"
     }
-}
-
-def env_config(type = "", name = "", namespace = "") {
-    if (!type) {
-        echo "env_config:type is null."
-        throw new RuntimeException("type is null.")
-    }
-    if (!name) {
-        echo "env_config:name is null."
-        throw new RuntimeException("name is null.")
-    }
-    if (!namespace) {
-        echo "env_config:namespace is null."
-        throw new RuntimeException("namespace is null.")
-    }
-
-    // check config
-    count = sh(script: "kubectl get ${type} -n ${namespace} | grep ${name} | wc -l", returnStdout: true).trim()
-    if ("$count" == "0") {
-        return "false"
-    }
-
-    return "true"
-
-    // // md5sum
-    // sum = sh(script: "kubectl get ${type} -n ${namespace} ${name} -o yaml | md5sum | awk '{printf \$1}'", returnStdout: true).trim()
-    // return sum
-}
-
-def set_repo_ver(repo = "", ver = "") {
-
-    def path = "charts/${name}"
-
-    dir("${path}") {
-      sh "sed -i -e \"s|repository: .*|repository: ${repo}|\" values.yaml"
-      sh "sed -i -e \"s/tag: .*/tag: ${ver}/g\" values.yaml"
-    }
-
 }
 
 def make_chart(path = "", latest = false) {
@@ -276,7 +218,9 @@ def make_chart(path = "", latest = false) {
             sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
         """
 
-        if (registry) {
+        if (ecr_registry) {
+            sh "sed -i -e \"s|repository: .*|repository: ${ecr_registry}/${name}|\" values.yaml"
+        } else if (registry) {
             sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
         }
     }
@@ -359,79 +303,6 @@ def helm_init() {
     """
 }
 
-def apply(cluster = "", namespace = "", type = "", yaml = "") {
-    if (!name) {
-        echo "apply:name is null."
-        throw new RuntimeException("name is null.")
-    }
-    if (!version) {
-        echo "apply:version is null."
-        throw new RuntimeException("version is null.")
-    }
-    if (!cluster) {
-        echo "apply:cluster is null."
-        throw new RuntimeException("cluster is null.")
-    }
-    if (!namespace) {
-        echo "apply:namespace is null."
-        throw new RuntimeException("namespace is null.")
-    }
-
-    if (!type) {
-        type = "secret"
-    }
-    if (!yaml) {
-        yaml = "${type}/${cluster}/${namespace}/${name}.yaml"
-    }
-
-    // yaml
-    yaml_path = sh(script: "find . -name ${name}.yaml | grep '${yaml}' | head -1", returnStdout: true).trim()
-    if (!yaml_path) {
-        echo "apply:yaml_path is null."
-        throw new RuntimeException("yaml_path is null.")
-    }
-
-    sh """
-        sed -i -e \"s|name: REPLACE-ME|name: ${name}|\" ${yaml_path}
-    """
-
-    // cluster
-    env_cluster(cluster)
-
-    // namespace
-    env_namespace(namespace)
-
-    sh """
-        kubectl apply -n ${namespace} -f ${yaml_path}
-    """
-}
-
-def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
-
-    // env cluster
-    env_cluster(cluster)
-
-    // env namespace
-    env_namespace(namespace)
-
-    // helm init
-    helm_init()
-
-    sh """
-        helm upgrade --install ${deploy_name} chartmuseum/${name} \
-            --namespace ${namespace} --devel \
-            --values ${values_path} \
-            --set namespace=${namespace} \
-            --set ingress.basedomain=${base_domain} \
-            --set profile=${profile} 
-    """
-
-    sh """
-        helm search ${name} && \
-        helm history ${name}-${namespace} --max 10
-    """
-}
-
 def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
     if (!name) {
         echo "deploy:name is null."
@@ -466,20 +337,6 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
     helm_init()
 
     this.sub_domain = sub_domain
-
-    // config configmap
-    // configmap = env_config("configmap", name, namespace)
-    // configmap_enabled = "false"
-    // if (configmap_hash == "") {
-    //     configmap_enabled = "true"
-    // }
-
-    // config secret
-    // secret = env_config("secret", name, namespace)
-    // secret_enabled = "false"
-    // if (secret_hash != "") {
-    //     secret_enabled = "true"
-    // }
 
     // extra_values (format = --set KEY=VALUE)
     extra_values = ""
@@ -552,95 +409,6 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
         helm search ${name} && \
         helm history ${name}-${namespace} --max 10
     """
-}
-
-def scan_helm(cluster = "", namespace = "") {
-    // must have cluster
-    if (!cluster) {
-        echo "remove:cluster is null."
-        throw new RuntimeException("cluster is null.")
-    }
-    env_cluster(cluster)
-
-    // admin can scan all images,
-    // others can scan own images.
-    if (!namespace) {
-        list = sh(script: "helm ls | awk '{print \$1}'", returnStdout: true).trim()
-    } else {
-        list = sh(script: "helm ls --namespace ${namespace} | awk '{print \$1}'", returnStdout: true).trim()
-    }
-    list
-}
-
-def scan_images() {
-    if (!chartmuseum) {
-        load_variables()
-    }
-    list = sh(script: "curl -X GET https://${registry}/v2/_catalog | jq -r '.repositories[]'", returnStdout: true).trim()
-    list
-}
-
-def scan_images_version(image_name = "", latest = false) {
-    if (!chartmuseum) {
-        load_variables()
-    }
-    if(latest) {
-      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | sort -r | head -n 1", returnStdout: true).trim()
-    } else {
-      list = sh(script: "curl -X GET https://${registry}/v2/${image_name}/tags/list | jq -r '.tags[]' | sort -r", returnStdout: true).trim()
-    }
-    list
-}
-
-def scan_charts() {
-    if (!chartmuseum) {
-        load_variables()
-    }
-    list = sh(script: "curl https://${chartmuseum}/api/charts | jq -r 'keys[]'", returnStdout: true).trim()
-    list
-}
-
-def scan_charts_version(mychart = "", latest = false) {
-    if (!chartmuseum) {
-        load_variables()
-    }
-    if (latest) {
-      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | sort -r | head -n 1", returnStdout: true).trim()
-    } else {
-      list = sh(script: "curl https://${chartmuseum}/api/charts/${mychart} | jq -r '.[].version' | sort -r", returnStdout: true).trim()
-    }
-    list
-}
-
-def rollback(cluster = "", namespace = "", revision = "") {
-    if (!name) {
-        echo "remove:name is null."
-        throw new RuntimeException("name is null.")
-    }
-    if (!cluster) {
-        echo "remove:cluster is null."
-        throw new RuntimeException("cluster is null.")
-    }
-    if (!namespace) {
-        echo "remove:namespace is null."
-        throw new RuntimeException("namespace is null.")
-    }
-    if (!revision) {
-        revision = "0"
-    }
-
-    // env cluster
-    env_cluster(cluster)
-
-    // helm init
-    helm_init()
-
-    sh """
-        helm search ${name} && \
-        helm history ${name}-${namespace} --max 10
-    """
-
-    sh "helm rollback ${name}-${namespace} ${revision}"
 }
 
 def remove(cluster = "", namespace = "") {
@@ -861,126 +629,5 @@ def send(token = "", color = "", title = "", message = "", footer = "") {
     } catch (ignored) {
     }
 }
-
-//-------------------------------------
-// Terraform
-//-------------------------------------
-
-def terraform_init(cluster = "", path = "") {
-    if (!cluster) {
-        echo "failure:cluster is null."
-        throw new RuntimeException("cluster is null.")
-    }
-    if (!path) {
-        echo "failure:path is null."
-        throw new RuntimeException("path is null.")
-    }
-
-    env_aws(cluster)
-
-    dir("${path}") {
-        if (fileExists(".terraform")) {
-            sh """
-                rm -rf .terraform
-                terraform init -no-color
-            """
-        } else {
-            sh """
-                terraform init -no-color
-            """
-        }
-    }
-}
-
-def terraform_check_changes(cluster = "", path = "") {
-    terraform_init(cluster, path)
-
-    dir("${path}") {
-        sh """
-            terraform plan -no-color
-        """
-        changed = sh (
-            script: "terraform plan -no-color | grep Plan",
-            returnStatus: true
-        ) == 0
-
-        if (!changed) {
-            echo "No changes. Infrastructure is up-to-date."
-            throw new RuntimeException("No changes. Infrastructure is up-to-date.")
-        }
-    }
-}
-
-def terraform_apply(cluster = "", path = "") {
-    terraform_init(cluster, path)
-
-    dir("${path}") {
-        applied = sh (
-            script: "terraform apply -auto-approve",
-            returnStatus: true
-        ) == 0
-
-        if (!applied) {
-            echo "Apply failed!"
-            throw new RuntimeException("Apply failed!")
-        }
-    }
-}
-
-//-------------------------------------
-// Pull Request for Version Update
-//-------------------------------------
-
-def checkout_pipeline(credentials_id="", git_url = "") {
-    sshagent (credentials: [credentials_id]) {
-        cloned = sh (
-            script: "printenv; ssh-add -l; git clone ${git_url}",
-            returnStatus: true
-        ) == 0
-
-        if (!cloned) {
-            echo "Clone failed!"
-            throw new RuntimeException("Clone failed!")
-        }
-    }
-}
-
-def create_pull_request(credentials_id="", path = "", site = "", profile = "", job = "", image = "") {
-    if (!path) {
-        echo "failure:path is null."
-        throw new RuntimeException("path is null.")
-    }
-    if (!site) {
-        echo "failure:site is null."
-        throw new RuntimeException("site is null.")
-    }
-    if (!profile) {
-        echo "failure:profile is null."
-        throw new RuntimeException("profile is null.")
-    }
-    if (!job) {
-        echo "failure:job is null."
-        throw new RuntimeException("job is null.")
-    }
-
-    if (!image) {
-        image = "${registry}/${name}:${version}"
-    }
-
-    dir("${path}") {
-        sshagent (credentials: [credentials_id]) {
-            created = sh (
-                script: "printenv; ssh-add -l;  ./builder.sh ${site} ${profile} ${job} ${image}",
-                returnStatus: true
-            ) == 0
-
-            if (!created) {
-                echo "Version Update PR failed!"
-                throw new RuntimeException("Version Update PR failed!")
-            }
-        }
-    }
-}
-
 
 return this

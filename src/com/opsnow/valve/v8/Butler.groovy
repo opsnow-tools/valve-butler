@@ -28,27 +28,13 @@ def prepare(name = "sample", version = "") {
 def set_version(version = "") {
     // version
     if (!version) {
-        date = (new Date()).format('yyyyMMdd-HHmm')
-        version = "v0.0.1-${date}"
+        date = (new Date()).format('yyyyMMdd.HHmm')
+        version = "v0.0.1+${date}"
     }
 
     this.version = version
 
     echo "# version: ${version}"
-}
-
-def get_version() {
-    if (!version) {
-        throw new RuntimeException("No version")
-    }
-    echo "# version: ${version}"
-    this.version
-}
-
-def set_values_home(values_home = "") {
-    this.values_home = values_home
-
-    echo "# values_home: ${values_home}"
 }
 
 def scan(source_lang = "") {
@@ -68,6 +54,26 @@ def scan(source_lang = "") {
 
     // chart
     make_chart()
+}
+
+def set_jenkins(param = "") {
+    this.jenkins = param
+}
+
+def set_chartmuseum(param = "") {
+    this.chartmuseum = param
+}
+
+def set_registry(param = "") {
+    this.registry = param
+}
+
+def set_sonarqube(param = "") {
+    this.sonarqube = param
+}
+
+def set_nexus(param = "") {
+    this.nexus = param
 }
 
 def load_variables() {

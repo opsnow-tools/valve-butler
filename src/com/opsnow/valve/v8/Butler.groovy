@@ -28,8 +28,8 @@ def prepare(name = "sample", version = "") {
 def set_version(version = "") {
     // version
     if (!version) {
-        date = (new Date()).format('yyyyMMdd.HHmm')
-        version = "v0.0.1_${date}"
+        date = (new Date()).format('yyyyMMddHHmm')
+        version = "v0.0.${date}"
     }
 
     this.version = version

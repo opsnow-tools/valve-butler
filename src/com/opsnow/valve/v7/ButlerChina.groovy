@@ -376,7 +376,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
             --set ingress.basedomain=${base_domain} \
             --set namespace=${namespace} \
             --set profile=${profile} \
-            --set image.repositor=hahahahaha \
+            --set image.repository=hahahahaha \
             ${extra_values}
     """
 

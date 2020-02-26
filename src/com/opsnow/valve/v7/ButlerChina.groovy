@@ -1,13 +1,6 @@
 #!/usr/bin/groovy
 package com.opsnow.valve.v7;
 
-def debug() {
-    sh """
-        ls -al
-        ls -al ~
-    """
-}
-
 def prepare(name = "sample", version = "") {
     // image name
     this.name = name
@@ -19,8 +12,7 @@ def prepare(name = "sample", version = "") {
     this.cluster = ""
     this.namespace = ""
     this.sub_domain = ""
-    this.values_home = ""
-    this.ecr_registry = ""
+    this.image_repository = ""
 
     // this cluster
     load_variables()
@@ -38,16 +30,36 @@ def set_version(version = "") {
     echo "# version: ${version}"
 }
 
+def load_variables() {
+    // groovy variables
+    sh """
+        kubectl get secret groovy-variables -n default -o json | jq -r .data.groovy | base64 -d > ${home}/Variables.groovy && \
+        cat ${home}/Variables.groovy | grep def
+    """
+
+    def val = load "${home}/Variables.groovy"
+
+    this.base_domain = val.base_domain
+
+    if (val.cluster == "devops") {
+        this.jenkins = val.jenkins
+        this.chartmuseum = val.chartmuseum
+        this.registry = val.registry
+        this.sonarqube = val.sonarqube
+        this.nexus = val.nexus
+    }
+}
+
 def scan(source_lang = "") {
     this.source_lang = source_lang
     this.source_root = "."
 
     // language
     if (!source_lang || source_lang == "java") {
-        scan_langusge("pom.xml", "java")
+        scan_language("pom.xml", "java")
     }
     if (!source_lang || source_lang == "nodejs") {
-        scan_langusge("package.json", "nodejs")
+        scan_language("package.json", "nodejs")
     }
 
     echo "# source_lang: ${this.source_lang}"
@@ -77,8 +89,8 @@ def set_nexus(param = "") {
     this.nexus = param
 }
 
-def set_ecr_registry(param = "") {
-    this.ecr_registry = param
+def set_image_repository(param = "") {
+    this.image_repository = param
 }
 
 def scan_charts_version(mychart = "", latest = false) {
@@ -93,28 +105,7 @@ def scan_charts_version(mychart = "", latest = false) {
     list
 }
 
-def load_variables() {
-    // groovy variables
-    sh """
-        kubectl get secret groovy-variables -n default -o json | jq -r .data.groovy | base64 -d > ${home}/Variables.groovy && \
-        cat ${home}/Variables.groovy | grep def
-    """
-
-    def val = load "${home}/Variables.groovy"
-
-    this.slack_token = val.slack_token
-    this.base_domain = val.base_domain
-
-    if (val.cluster == "devops") {
-        this.jenkins = val.jenkins
-        this.chartmuseum = val.chartmuseum
-        this.registry = val.registry
-        this.sonarqube = val.sonarqube
-        this.nexus = val.nexus
-    }
-}
-
-def scan_langusge(target = "", target_lang = "") {
+def scan_language(target = "", target_lang = "") {
     def target_path = sh(script: "find . -name ${target} | head -1", returnStdout: true).trim()
 
     if (target_path) {
@@ -229,8 +220,8 @@ def make_chart(path = "", latest = false) {
             sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
         """
 
-        if (ecr_registry) {
-            sh "sed -i -e \"s|repository: .*|repository: ${ecr_registry}/${name}|\" values.yaml"
+        if (image_repository) {
+            sh "sed -i -e \"s|repository: .*|repository: ${image_repository}/${name}|\" values.yaml"
         } else if (registry) {
             sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
         }
@@ -376,7 +367,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
             --set ingress.basedomain=${base_domain} \
             --set namespace=${namespace} \
             --set profile=${profile} \
-            --set image.repository=hahahahaha \
+            --set image.repository=${image_repository} \
             ${extra_values}
     """
 
@@ -414,6 +405,7 @@ def remove(cluster = "", namespace = "") {
     sh "helm delete --purge ${name}-${namespace}"
 }
 
+////////////////////////// build
 def get_source_root(source_root = "") {
     if (!source_root) {
         if (!this.source_root) {
@@ -531,19 +523,11 @@ def mvn_sonar(source_root = "", sonarqube = "") {
     }
 }
 
+/////////////// slack
 def failure(token = "", type = "") {
     if (!name) {
         echo "failure:name is null."
         throw new RuntimeException("name is null.")
-    }
-    if (slack_token) {
-        if (!token) {
-            token = slack_token
-        } else if (token instanceof List) {
-            token.add(slack_token)
-        } else {
-            token = [token, slack_token]
-        }
     }
     slack(token, "danger", "${type} Failure", "`${name}` `${version}`", "${JOB_NAME} <${RUN_DISPLAY_URL}|#${BUILD_NUMBER}>")
 }

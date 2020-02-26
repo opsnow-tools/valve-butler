@@ -314,7 +314,7 @@ def helm_init() {
     """
 }
 
-def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_path = "") {
+def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     if (!name) {
         echo "deploy:name is null."
         throw new RuntimeException("name is null.")
@@ -367,54 +367,18 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
         extra_values = "--set replicaCount=${desired}"
     }
 
-    // values_path
-    if (!values_path) {
-        values_path = ""
-        if (values_home) {
-            count = sh(script: "ls ${values_home}/${name} | grep '${namespace}.yaml' | wc -l", returnStdout: true).trim()
-            if ("${count}" == "0") {
-                throw new RuntimeException("values_path not found.")
-            } else {
-                values_path = "${values_home}/${name}/${namespace}.yaml"
-            }
-        }
-    }
-
-    // app-version: https://github.com/helm/helm/pull/5492
-
-    if (values_path) {
-
-        // helm install
-        sh """
-            helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
-                --version ${version} --namespace ${namespace} --devel \
-                --values ${values_path} \
-                --set namespace=${namespace} \
-                --set profile=${profile} \
-                ${extra_values}
-        """
-        // --app-version ${version} \
-        // --set configmap.enabled=${configmap} \
-        // --set secret.enabled=${secret} \
-
-    } else {
-
-        // helm install
-        sh """
-            helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
-                --version ${version} --namespace ${namespace} --devel \
-                --set fullnameOverride=${name} \
-                --set ingress.subdomain=${sub_domain} \
-                --set ingress.basedomain=${base_domain} \
-                --set namespace=${namespace} \
-                --set profile=${profile} \
-                ${extra_values}
-        """
-        // --app-version ${version} \
-        // --set configmap.enabled=${configmap} \
-        // --set secret.enabled=${secret} \
-
-    }
+    // helm install
+    sh """
+        helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
+            --version ${version} --namespace ${namespace} --devel \
+            --set fullnameOverride=${name} \
+            --set ingress.subdomain=${sub_domain} \
+            --set ingress.basedomain=${base_domain} \
+            --set namespace=${namespace} \
+            --set profile=${profile} \
+            --set image.repositor=hahahahaha \
+            ${extra_values}
+    """
 
     sh """
         helm search ${name} && \

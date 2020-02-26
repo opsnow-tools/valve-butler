@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-package com.opsnow.valve.v8;
+package com.opsnow.valve.v7;
 
 def debug() {
     sh """

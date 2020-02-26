@@ -12,7 +12,8 @@ def prepare(name = "sample", version = "") {
     this.cluster = ""
     this.namespace = ""
     this.sub_domain = ""
-    this.image_repository = ""
+
+    set_image_repository()
 
     // this cluster
     load_variables()
@@ -90,7 +91,13 @@ def set_nexus(param = "") {
 }
 
 def set_image_repository(param = "") {
-    this.image_repository = param
+    if(!param) {
+        account_id = sh(script: "aws sts get-caller-identity | jq -r '.Account'").trim()
+        ecr_addr = "${account_id}.dkr.ecr.cn-north-1.amazonaws.com.cn"
+        this.image_repository = "${ecr_addr}/opsnow"
+    } else {
+        this.image_repository = param
+    }
 }
 
 def scan_charts_version(mychart = "", latest = false) {

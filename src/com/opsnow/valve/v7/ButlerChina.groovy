@@ -92,7 +92,7 @@ def set_nexus(param = "") {
 
 def set_image_repository(param = "") {
     if(!param) {
-        account_id = sh(script: "aws sts get-caller-identity | jq -r '.Account'").trim()
+        account_id = sh(script: "aws sts get-caller-identity | jq -r '.Account'", returnStdout: true).trim()
         ecr_addr = "${account_id}.dkr.ecr.cn-north-1.amazonaws.com.cn"
         this.image_repository = "${ecr_addr}/opsnow"
     } else {

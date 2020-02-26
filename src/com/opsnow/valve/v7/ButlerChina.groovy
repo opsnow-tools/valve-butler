@@ -273,7 +273,7 @@ def build_chart(path = "") {
     """
 }
 
-def build_image(credential = "HarborAdmin") {
+def build_image(harborcredential = "HarborAdmin") {
     if (!name) {
         echo "build_image:name is null."
         throw new RuntimeException("name is null.")
@@ -283,7 +283,7 @@ def build_image(credential = "HarborAdmin") {
         throw new RuntimeException("version is null.")
     }
 
-    docker.withRegistry("https://harbor-devops.dev.opsnow.com", "${credential}") {
+    docker.withRegistry("https://harbor-devops.dev.opsnow.com", "${harborcredential}") {
         sh "docker build -t ${registry}/${name}:${version} ."
         sh "docker push ${registry}/${name}:${version}"
     }

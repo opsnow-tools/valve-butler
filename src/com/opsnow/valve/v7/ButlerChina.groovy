@@ -88,9 +88,15 @@ def set_nexus(param = "") {
     this.nexus = param
 }
 
+def set_account_id(param = "") {
+    this.account_id = param
+}
+
 def set_image_repository(param = "") {
     if(!param) {
-        account_id = sh(script: "aws sts get-caller-identity | jq -r '.Account'", returnStdout: true).trim()
+        if(!"${account_id}") {
+            account_id = sh(script: "aws sts get-caller-identity | jq -r '.Account'", returnStdout: true).trim()
+        }
         ecr_addr = "${account_id}.dkr.ecr.cn-north-1.amazonaws.com.cn"
         this.image_repository = "${ecr_addr}/opsnow"
     } else {
@@ -375,7 +381,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
             --set ingress.basedomain=${base_domain} \
             --set namespace=${namespace} \
             --set profile=${profile} \
-            --set image.repository=${image_repository}/${name}:${version} \
+            --set image.repository=${image_repository}/${name} \
             ${extra_values}
     """
 

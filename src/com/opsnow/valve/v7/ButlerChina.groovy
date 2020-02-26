@@ -13,8 +13,6 @@ def prepare(name = "sample", version = "") {
     this.namespace = ""
     this.sub_domain = ""
 
-    set_image_repository()
-
     // this cluster
     load_variables()
 }
@@ -178,6 +176,9 @@ def env_cluster(cluster = "") {
 
     // target cluster
     load_variables()
+
+    // ecr repository uri
+    set_image_repository()
 }
 
 def env_namespace(namespace = "") {

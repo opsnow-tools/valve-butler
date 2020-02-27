@@ -94,7 +94,7 @@ def set_account_id(param = "") {
 }
 
 def set_image_repository(param = "") {
-    if(!param) {
+    if(param == "") {
         if(!"${account_id}") {
             account_id = sh(script: "aws sts get-caller-identity | jq -r '.Account'", returnStdout: true).trim()
         }

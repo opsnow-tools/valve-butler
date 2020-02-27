@@ -13,6 +13,7 @@ def prepare(name = "sample", version = "") {
     this.namespace = ""
     this.sub_domain = ""
     this.image_repository = ""
+    this.registry = "harbor-devops.dev.opsnow.com"
 
     // this cluster
     load_variables()
@@ -44,7 +45,7 @@ def load_variables() {
     if (val.cluster == "devops") {
         this.jenkins = val.jenkins
         this.chartmuseum = val.chartmuseum
-//        this.registry = val.registry
+        // this.registry = val.registry
         this.sonarqube = val.sonarqube
         this.nexus = val.nexus
     }
@@ -185,7 +186,7 @@ def env_cluster(cluster = "") {
     load_variables()
 
     // ecr repository uri
-    set_image_repository("${registry}")
+    set_image_repository()
 }
 
 def env_namespace(namespace = "") {
@@ -235,9 +236,7 @@ def make_chart(path = "", latest = false) {
             sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
         """
 
-        if (image_repository) {
-            sh "sed -i -e \"s|repository: .*|repository: ${image_repository}/${name}|\" values.yaml"
-        } else if (registry) {
+        if (registry) {
             sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
         }
     }
@@ -298,7 +297,7 @@ def build_image(harborcredential = "HarborAdmin") {
         throw new RuntimeException("version is null.")
     }
 
-    docker.withRegistry("https://harbor-devops.dev.opsnow.com", "${harborcredential}") {
+    docker.withRegistry("https://${registry}", "${harborcredential}") {
         sh "docker build -t ${registry}/${name}:${version} ."
         sh "docker push ${registry}/${name}:${version}"
     }

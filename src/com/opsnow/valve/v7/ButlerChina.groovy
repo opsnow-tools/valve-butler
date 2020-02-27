@@ -91,19 +91,22 @@ def set_nexus(param = "") {
     this.nexus = param
 }
 
-def set_account_id(param = "") {
-    this.account_id = param
-}
-
-def set_image_repository(param = "") {
-    if(param == "") {
-        if(!"${account_id}") {
+def set_image_repository(use_ecr = true, account_id = "", region = "cn-north-1", ecr_repository = "opsnow") {
+    if (use_ecr) {
+        // get ecr uri
+        if (!"${account_id}") {
             account_id = sh(script: "aws sts get-caller-identity | jq -r '.Account'", returnStdout: true).trim()
         }
-        ecr_addr = "${account_id}.dkr.ecr.cn-north-1.amazonaws.com.cn"
-        this.image_repository = "${ecr_addr}/opsnow"
+        if (region == "cn-north-1") {
+            // china region
+            ecr_addr = "${account_id}.dkr.ecr.${region}.amazonaws.com.cn"
+        } else {
+            // global region
+            ecr_addr = "${account_id}.dkr.ecr.${region}.amazonaws.com"
+        }
+        this.image_repository = "${ecr_addr}/${ecr_repository}"
     } else {
-        this.image_repository = param
+        this.image_repository = ""
     }
 }
 
@@ -371,6 +374,10 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     }
 
     // helm install
+    if (!image_repository) {
+        extra_values = "${extra_values} --set image.repository=${image_repository}/${name}"
+    }
+
     sh """
         helm upgrade --install ${name}-${namespace} chartmuseum/${name} \
             --version ${version} --namespace ${namespace} --devel \

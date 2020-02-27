@@ -14,6 +14,7 @@ def prepare(name = "sample", version = "") {
     this.sub_domain = ""
     this.image_repository = ""
     this.registry = "harbor-devops.dev.opsnow.com"
+    this.registry_namespace = "hprivate"
 
     // this cluster
     load_variables()
@@ -237,7 +238,7 @@ def make_chart(path = "", latest = false) {
         """
 
         if (registry) {
-            sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
+            sh "sed -i -e \"s|repository: .*|repository: ${registry}/${registry_namespace}/${name}|\" values.yaml"
         }
     }
 }
@@ -298,8 +299,8 @@ def build_image(harborcredential = "HarborAdmin") {
     }
 
     docker.withRegistry("https://${registry}", "${harborcredential}") {
-        sh "docker build -t ${registry}/${name}:${version} ."
-        sh "docker push ${registry}/${name}:${version}"
+        sh "docker build -t ${registry}/${registry_namespace}/${name}:${version} ."
+        sh "docker push ${registry}/${registry_namespace}/${name}:${version}"
     }
 }
 

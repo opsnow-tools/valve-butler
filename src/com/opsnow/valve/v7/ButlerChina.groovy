@@ -185,9 +185,6 @@ def env_cluster(cluster = "") {
 
     // target cluster
     load_variables()
-
-    // ecr repository uri
-    set_image_repository("${registry}")
 }
 
 def env_namespace(namespace = "") {
@@ -382,7 +379,6 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
             --set ingress.basedomain=${base_domain} \
             --set namespace=${namespace} \
             --set profile=${profile} \
-            --set image.repository=${image_repository}/${name} \
             ${extra_values}
     """
 

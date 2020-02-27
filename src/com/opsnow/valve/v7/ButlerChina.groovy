@@ -44,7 +44,7 @@ def load_variables() {
     if (val.cluster == "devops") {
         this.jenkins = val.jenkins
         this.chartmuseum = val.chartmuseum
-        this.registry = val.registry
+//        this.registry = val.registry
         this.sonarqube = val.sonarqube
         this.nexus = val.nexus
     }

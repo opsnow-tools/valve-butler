@@ -184,7 +184,7 @@ def env_cluster(cluster = "") {
     load_variables()
 
     // ecr repository uri
-    set_image_repository()
+    set_image_repository("${registry}")
 }
 
 def env_namespace(namespace = "") {

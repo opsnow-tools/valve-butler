@@ -373,10 +373,15 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         extra_values = "--set replicaCount=${desired}"
     }
 
+    echo "extra values : ${extra_values}"
+
     // helm install
     if (!image_repository) {
         extra_values = "${extra_values} --set image.repository=${image_repository}/${name}"
     }
+
+    echo "image repo : ${image_repository}"
+    echo "extra values : ${extra_values}"
 
     sh """
         helm upgrade --install ${name}-${namespace} chartmuseum/${name} \

@@ -376,7 +376,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
     echo "extra values : ${extra_values}"
 
     // helm install
-    if (!image_repository) {
+    if (image_repository) {
         extra_values = "${extra_values} --set image.repository=${image_repository}/${name}"
     }
 

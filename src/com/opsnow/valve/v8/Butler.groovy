@@ -15,7 +15,6 @@ def prepare(name = "sample", version = "") {
     this.image_repository = ""
     this.registry = "harbor-devops.dev.opsnow.com"
     this.registry_namespace = "hprivate"
-    this.postfix_domain = ""
 
     // this cluster
     load_variables()
@@ -43,7 +42,6 @@ def load_variables() {
     def val = load "${home}/Variables.groovy"
 
     this.base_domain = val.base_domain
-    this.postfix_domain = val.postfix_domain
 
     if (val.cluster == "devops") {
         this.jenkins = val.jenkins
@@ -340,7 +338,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "") {
         throw new RuntimeException("namespace is null.")
     }
     if (!sub_domain) {
-        sub_domain = "${name}-${namespace}${postfix_domain}"
+        sub_domain = "${name}-${namespace}"
     }
     if (!profile) {
         profile = namespace

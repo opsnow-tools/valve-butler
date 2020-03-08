@@ -180,7 +180,8 @@ def env_cluster(cluster = "") {
     """
 
     // check current context
-    count = sh(script: "kubectl config current-context | grep '${cluster}' | wc -l", returnStdout: true).trim()
+    def precluster = ${cluster}
+    count = sh(script: "kubectl config current-context | grep precluster.substring(0,4) | wc -l", returnStdout: true).trim()
     if ("${count}" == "0") {
         echo "env_cluster:current-context is not match."
         throw new RuntimeException("current-context is not match.")

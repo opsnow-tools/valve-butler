@@ -312,7 +312,7 @@ def build_chart(path = "") {
     """
 }
 
-def build_image() {
+def build_image(harborcredential = "HarborAdmin") {
     if (!name) {
         echo "build_image:name is null."
         throw new RuntimeException("name is null.")

@@ -88,6 +88,8 @@ def load_variables() {
         this.registry = val.registry
         this.sonarqube = val.sonarqube
         this.nexus = val.nexus
+        this.harbor = val.harbor
+        this.harbor_project = val.harbor_project
     }
 }
 
@@ -322,6 +324,8 @@ def build_image() {
 
     sh "docker build -t ${registry}/${name}:${version} ."
     sh "docker push ${registry}/${name}:${version}"
+    sh "docker image tag ${registry}/${name}:${version} ${harbor}/${harbor_project}/${name}:${version}"
+    sh "docker push ${harbor}/${harbor_project}/${name}:${version}"
 }
 
 def helm_init() {

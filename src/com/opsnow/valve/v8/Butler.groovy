@@ -20,6 +20,7 @@ def prepare(name = "sample", version = "") {
     this.namespace = ""
     this.sub_domain = ""
     this.values_home = ""
+    this.image_repository = ""
 
     // this cluster
     load_variables()
@@ -68,6 +69,25 @@ def scan(source_lang = "") {
 
     // chart
     make_chart()
+}
+
+def set_image_repository(use_ecr = true, account_id = "", region = "cn-north-1", ecr_repository = "opsnow") {
+    if (use_ecr) {
+        // get ecr uri
+        if (!"${account_id}") {
+            account_id = sh(script: "aws sts get-caller-identity | jq -r '.Account'", returnStdout: true).trim()
+        }
+        if (region == "cn-north-1") {
+            // china region
+            ecr_addr = "${account_id}.dkr.ecr.${region}.amazonaws.com.cn"
+        } else {
+            // global region
+            ecr_addr = "${account_id}.dkr.ecr.${region}.amazonaws.com"
+        }
+        this.image_repository = "${ecr_addr}/${ecr_repository}"
+    } else {
+        this.image_repository = ""
+    }
 }
 
 def load_variables() {
@@ -484,6 +504,11 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
     desired = sh(script: "kubectl get deploy -n ${namespace} | grep '${name} ' | head -1 | awk '{print \$3}'", returnStdout: true).trim()
     if (desired != "") {
         extra_values = "--set replicaCount=${desired}"
+    }
+
+    // deployment image repository
+    if (image_repository) {
+        extra_values = "${extra_values} --set image.repository=${image_repository}/${name}"
     }
 
     // values_path

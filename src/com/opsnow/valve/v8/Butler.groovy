@@ -729,7 +729,6 @@ def npm_sonar(source_root = "", sonarqube = "") {
       source_root = get_source_root(source_root)
       dir("${source_root}") {
         sh """
-            npm install -g sonar-scanner sonarqube-scanner && \
             sonar-scanner -Dsonar.sources=. -Dsonar.projectKey=${name} -Dsonar.projectName=${name} -Dsonar.host.url=${sonarqube} -Dsonar.login=${sonar_token}
         """
       }

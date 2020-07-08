@@ -328,7 +328,7 @@ def build_chart(path = "") {
     // helm repo
     sh """
         helm repo update && \
-        helm search ${name}
+        helm search repo ${name}
     """
 }
 
@@ -433,7 +433,7 @@ def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", su
     """
 
     sh """
-        helm search ${name} && \
+        helm search repo ${name} && \
         helm history ${name}-${namespace} --max 10
     """
 }
@@ -492,7 +492,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
 
     // latest version
     if (version == "latest") {
-        version = sh(script: "helm search chartmuseum/${name} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
+        version = sh(script: "helm search repo chartmuseum/${name} | grep ${name} | head -1 | awk '{print \$2}'", returnStdout: true).trim()
         if (version == "") {
             echo "deploy:latest version is null."
             throw new RuntimeException("latest version is null.")
@@ -560,7 +560,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
     }
 
     sh """
-        helm search ${name} && \
+        helm search repo ${name} && \
         helm history ${name}-${namespace} --max 10
     """
 }
@@ -647,7 +647,7 @@ def rollback(cluster = "", namespace = "", revision = "") {
     helm_init()
 
     sh """
-        helm search ${name} && \
+        helm search repo ${name} && \
         helm history ${name}-${namespace} --max 10
     """
 
@@ -675,7 +675,7 @@ def remove(cluster = "", namespace = "") {
     helm_init()
 
     sh """
-        helm search ${name} && \
+        helm search repo ${name} && \
         helm history ${name}-${namespace} --max 10
     """
 

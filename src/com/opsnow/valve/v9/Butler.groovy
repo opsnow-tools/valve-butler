@@ -68,7 +68,7 @@ def scan(source_lang = "") {
     echo "# source_root: ${this.source_root}"
 
     // chart
-    make_chart()
+    make_chart("", false, source_lang)
 }
 
 def set_image_repository(use_ecr = true, account_id = "", region = "cn-north-1", ecr_repository = "opsnow") {
@@ -249,7 +249,7 @@ def env_config(type = "", name = "", namespace = "") {
     // return sum
 }
 
-def make_chart(path = "", latest = false) {
+def make_chart(path = "", latest = false, source_lang = "") {
     if (!name) {
         echo "make_chart:name is null."
         throw new RuntimeException("name is null.")
@@ -277,9 +277,12 @@ def make_chart(path = "", latest = false) {
     dir("${path}") {
         sh """
             sed -i -e \"s/name: .*/name: ${name}/\" Chart.yaml && \
-            sed -i -e \"s/version: .*/version: ${version}/\" Chart.yaml && \
-            sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
+            sed -i -e \"s/version: .*/version: ${version}/\" Chart.yaml
         """
+
+        if (source_lang != "helm") {
+            sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
+        }
 
         if (registry) {
             sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"

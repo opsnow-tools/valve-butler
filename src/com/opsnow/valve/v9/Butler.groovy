@@ -438,7 +438,7 @@ def deploy_only(deploy_name = "", version = "", cluster = "", namespace = "", su
 
     sh """
         helm search repo ${name} && \
-        helm history ${name}-${namespace} --max 10
+        helm --namespace ${namespace} history  ${name}-${namespace} --max 10
     """
 }
 
@@ -565,7 +565,7 @@ def deploy(cluster = "", namespace = "", sub_domain = "", profile = "", values_p
 
     sh """
         helm search repo ${name} && \
-        helm history ${name}-${namespace} --max 10
+        helm --namespace ${namespace} history  ${name}-${namespace} --max 10
     """
 }
 
@@ -652,7 +652,7 @@ def rollback(cluster = "", namespace = "", revision = "") {
 
     sh """
         helm search repo ${name} && \
-        helm history ${name}-${namespace} --max 10
+        helm --namespace ${namespace} history  ${name}-${namespace} --max 10
     """
 
     sh "helm rollback ${name}-${namespace} ${revision}"
@@ -680,7 +680,7 @@ def remove(cluster = "", namespace = "") {
 
     sh """
         helm search repo ${name} && \
-        helm history ${name}-${namespace} --max 10
+        helm --namespace ${namespace} history  ${name}-${namespace} --max 10
     """
 
     sh "helm delete --purge ${name}-${namespace}"

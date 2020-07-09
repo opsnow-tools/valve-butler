@@ -284,10 +284,9 @@ def make_chart(path = "", latest = false, source_lang = "") {
             sh """
                 sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
             """
-        }
-
-        if (registry) {
-            sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
+            if (registry) {
+                sh "sed -i -e \"s|repository: .*|repository: ${registry}/${name}|\" values.yaml"
+            }
         }
     }
 }

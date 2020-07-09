@@ -281,7 +281,9 @@ def make_chart(path = "", latest = false, source_lang = "") {
         """
 
         if (source_lang != "helm") {
-            sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
+            sh """
+                sed -i -e \"s/tag: .*/tag: ${app_version}/g\" values.yaml
+            """
         }
 
         if (registry) {

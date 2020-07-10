@@ -348,8 +348,8 @@ def build_image(harborcredential = "HarborAdmin") {
 
     sh "docker build -t ${registry}/${name}:${version} ."
     sh "docker push ${registry}/${name}:${version}"
-    sh "docker image tag ${registry}/${name}:${version} ${harbor}/${harbor_project}/${name}:${version}"
     docker.withRegistry("https://${harbor}", "${harborcredential}") {
+        sh "docker image tag ${registry}/${name}:${version} ${harbor}/${harbor_project}/${name}:${version}"
         sh "docker push ${harbor}/${harbor_project}/${name}:${version}"
     }
 }

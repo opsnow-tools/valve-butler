@@ -398,7 +398,7 @@ def push_docker(registry_type = "docker" /* (required) docker or harbor */, harb
             break
         case "harbor":
             docker.withRegistry("https://${harbor_url}", "${harbor_credential}") {
-                sh "docker image tag ${registry}/${name}:${version} ${harbor}/${harbor_project}/${name}:${version}"
+                sh "docker image tag ${registry}/${name}:${version} ${harbor_url}/${harbor_project}/${name}:${version}"
                 sh "docker push ${harbor_url}/${harbor_project}/${name}:${version}"
             }
             break

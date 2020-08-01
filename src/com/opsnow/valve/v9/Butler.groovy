@@ -357,6 +357,57 @@ def build_image(harborcredential = "HarborAdmin") {
     }
 }
 
+def build_docker() {
+    if (!name) {
+        echo "build_docker:name is null."
+        throw new RuntimeException("name is null.")
+    }
+    if (!version) {
+        echo "build_docker:version is null."
+        throw new RuntimeException("version is null.")
+    }
+
+    sh "docker build -t ${registry}/${name}:${version} ."
+    
+}
+
+
+def push_docker(registry_type = "docker" /* (required) docker or harbor */, harbor_url, harbor_project, harbor_credential) {
+    if (!name) {
+        echo "push_docker:name is null."
+        throw new RuntimeException("name is null.")
+    }
+    if (!version) {
+        echo "push_docker:version is null."
+        throw new RuntimeException("version is null.")
+    }
+    if ("${registry_type}" == "harbor") {
+        if (!harbor_project) {
+            echo "push_docker:harbor_project is null."
+            throw new RuntimeException("harbor_project is null.")
+        }
+        if (!harbor_credential) {
+            echo "push_docker:harbor_credential is null."
+            throw new RuntimeException("harbor_credential is null.")
+        }
+    }
+
+    switch (registry_type) {
+        case "docker": 
+            sh "docker push ${registry}/${name}:${version}"
+            break
+        case "harbor":
+            docker.withRegistry("https://${harbor_url}", "${harbor_credential}") {
+                sh "docker image tag ${registry}/${name}:${version} ${harbor}/${harbor_project}/${name}:${version}"
+                sh "docker push ${harbor_url}/${harbor_project}/${name}:${version}"
+            }
+            break
+        default:
+            throw new RuntimeException("registry_type is null.")
+    }
+}
+
+
 def helm_init() {
     sh """
         helm version
@@ -878,6 +929,33 @@ def send(token = "", color = "", title = "", message = "", footer = "") {
         }
     } catch (ignored) {
     }
+}
+
+//-------------------------------------
+// PrismaCloud
+//-------------------------------------
+def scan_image() {
+    if (!name) {
+        echo "build_docker:name is null."
+        throw new RuntimeException("name is null.")
+    }
+    if (!version) {
+        echo "build_docker:version is null."
+        throw new RuntimeException("version is null.")
+    }
+
+    prismaCloudScanImage ca: '',
+        cert: '',
+        dockerAddress: 'unix:///var/run/docker.sock',
+        image: "${registry}/${name}:${version}",
+        key: '',
+        logLevel: 'info',
+        podmanPath: '',
+        project: '',
+        resultsFile: 'prisma-cloud-scan-results.json',
+        ignoreImageBuildTime:true
+
+    prismaCloudPublish resultsFilePattern: 'prisma-cloud-scan-results.json'
 }
 
 //-------------------------------------

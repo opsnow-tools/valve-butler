@@ -857,6 +857,16 @@ def mvn_sonar(source_root = "", sonarqube = "") {
     }
 }
 
+def python_build(source_root = "") {
+    source_root = get_source_root(source_root)
+    dir("$source_root") {
+        sh """
+            mkdir requirements
+            pip install -r requirements.txt -t requirements
+        """
+    }
+}
+
 def failure(token = "", type = "") {
     if (!name) {
         echo "failure:name is null."

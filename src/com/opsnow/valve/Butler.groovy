@@ -486,6 +486,16 @@ def mvn_sonar(source_root = "", sonarqube = "") {
     }
 }
 
+def python_build(source_root = "") {
+    source_root = get_source_root(source_root)
+    dir("$source_root") {
+        sh """
+            mkdir requirements
+            pip install -r requirements.txt -t requirements
+        """
+    }
+}
+
 def failure(token = "", type = "", name = "", version = "") {
     slack(token, "danger", "$type Failure", "`$name`", "$JOB_NAME <$RUN_DISPLAY_URL|#$BUILD_NUMBER>")
 }

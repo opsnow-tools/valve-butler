@@ -164,11 +164,11 @@ def env_cluster(cluster = "") {
     }
 
     // for beijing region credential
-    count = sh(script: "kubectl get secret kube-config-${cluster} -n devops -o json | grep 'credentials' | wc -l", returnStdout: true).trim()
+    count = sh(script: "kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data | grep 'credentials' | wc -l", returnStdout: true).trim()
     if ("${count}" == "1") {
         sh """
             kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.credentials | base64 -d > ${home}/aws_credentials
-            cp ${home}/aws_credentials ${home}/.aws/aws_credentials
+            cp ${home}/aws_credentials ${home}/.aws/credentials
         """
     }
 

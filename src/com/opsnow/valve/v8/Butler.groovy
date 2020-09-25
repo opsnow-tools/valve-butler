@@ -163,13 +163,6 @@ def env_cluster(cluster = "") {
         throw new RuntimeException("cluster is null.")
     }
 
-    sh """
-        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.aws | base64 -d > ${home}/aws_config
-        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.text | base64 -d > ${home}/kube_config
-        cp ${home}/aws_config ${home}/.aws/config && \
-        cp ${home}/kube_config ${home}/.kube/config
-    """
-
     // for beijing region credential
     count = sh(script: "kubectl get secret kube-config-${cluster} -n devops -o json | grep 'credentials' | wc -l", returnStdout: true).trim()
     if ("${count}" == "1") {
@@ -178,6 +171,13 @@ def env_cluster(cluster = "") {
             cp ${home}/aws_credentials ${home}/.aws/aws_credentials
         """
     }
+
+    sh """
+        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.aws | base64 -d > ${home}/aws_config
+        kubectl get secret kube-config-${cluster} -n devops -o json | jq -r .data.text | base64 -d > ${home}/kube_config
+        cp ${home}/aws_config ${home}/.aws/config && \
+        cp ${home}/kube_config ${home}/.kube/config
+    """
 
     // check current context
     count = sh(script: "kubectl config current-context | grep '${cluster}' | wc -l", returnStdout: true).trim()

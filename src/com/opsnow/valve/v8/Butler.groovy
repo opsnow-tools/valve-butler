@@ -341,7 +341,7 @@ def build_chart(path = "") {
     """
 }
 
-def build_image(harborcredential = "HarborAdmin") {
+def build_image(harborcredential = "HarborAdmin", dockerFile = "./Dockerfile", params=[]) {
     if (!name) {
         echo "build_image:name is null."
         throw new RuntimeException("name is null.")
@@ -351,11 +351,24 @@ def build_image(harborcredential = "HarborAdmin") {
         throw new RuntimeException("version is null.")
     }
 
-    sh "docker build -t ${registry}/${name}:${version} ."
-    sh "docker push ${registry}/${name}:${version}"
-    sh "docker image tag ${registry}/${name}:${version} ${harbor}/${harbor_project}/${name}:${version}"
+    def image = "${registry}/${name}"
+    def harborImage = "${harbor}/${harbor_project}/${name}"
+
+    def imageDir = dockerFile.substring(0, dockerFile.lastIndexOf("/"))
+    params << "--no-cache"
+    params << "-f ${dockerFile}"
+    params << imageDir
+
+    dockerImage = docker.build("${image}:${version}", params.join(' '))
+    if (!dockerImage) {
+        throw new RuntimeException("Docker build failed")
+    }
+    dockerImage.push()
+
+    // push to harbor
+    sh "docker image tag ${image}:${version} ${harborImage}:${version}"
     docker.withRegistry("https://${harbor}", "${harborcredential}") {
-        sh "docker push ${harbor}/${harbor_project}/${name}:${version}"
+        sh "docker push ${harborImage}:${version}"
     }
 }
 

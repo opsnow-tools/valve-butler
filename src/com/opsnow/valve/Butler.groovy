@@ -280,7 +280,7 @@ def build_chart(name = "", version = "") {
     """
 }
 
-def build_image(name = "", version = "", dockerFile = "./Dockerfile", params=[]) {
+def build_image(name = "", version = "") {
     if (!name) {
         echo "build_image:name is null."
         throw new RuntimeException("name is null.")
@@ -290,16 +290,8 @@ def build_image(name = "", version = "", dockerFile = "./Dockerfile", params=[])
         throw new RuntimeException("version is null.")
     }
 
-    def imageDir = dockerFile.substring(0, dockerFile.lastIndexOf("/"))
-    params << "--no-cache"
-    params << "-f ${dockerFile}"
-    params << imageDir
-
-    dockerImage = docker.build("${registry}/${name}:${version}", params.join(' '))
-    if (!dockerImage) {
-        throw new RuntimeException("Docker build failed")
-    }
-    dockerImage.push()
+    sh "docker build -t $registry/$name:$version ."
+    sh "docker push $registry/$name:$version"
 }
 
 def helm_init() {

@@ -954,6 +954,67 @@ def send(token = "", color = "", title = "", message = "", footer = "") {
     }
 }
 
+def sendNotification(buildStatus = "", useNotification = [], token = "", type = "") {
+    if (!name) {
+        echo "proceed:name is null."
+        throw new RuntimeException("name is null.")
+    }
+    if (!version) {
+        echo "proceed:version is null."
+        throw new RuntimeException("version is null.")
+    }
+
+    if (buildStatus.toLowerCase().equals("success")) {
+        colorCode = "#00FF00"
+        colorName = "good"
+    } else if (buildStatus.toLowerCase().equals("proceed")) {
+        colorCode = "#FFFF00"
+        colorName = "warning"
+    } else if (buildStatus.toLowerCase().equals("failure")) {
+        colorCode = "#FF0000"
+        colorName = "danger"
+    }
+
+    def title = "${type} ${buildStatus}"
+    def message = "${name} ${version}"
+    def footer = "[${JOB_NAME}](${RUN_DISPLAY_URL}#${BUILD_NUMBER})"
+
+    if (token) {
+        if (token instanceof List) {
+            for (item in token) {
+                if (useNotification.contains("jandi")) {
+                    jandi(token, colorCode, title, message, footer)
+                }
+                if (useNotification.contains("slack")) {
+                    send(token, colorCode, title, message, footer)
+                }
+            }
+        } else {
+            if (useNotification.contains("jandi")) {
+                jandi(token, colorCode, title, message, footer)
+            }
+            if (useNotification.contains("slack")) {
+                send(send, colorCode, title, message, footer)
+            }
+        }
+    }
+}
+
+def jandi(token = "", color = "", title = "", message = "", footer = "") {
+    def apiURL="https://wh.jandi.com/connect-api/webhook/17259269/${token}"
+    def body='{"body":"'+title+'","connectColor":"'+color+'","connectInfo":[{"title":"'+message+'","description":"'+footer+'"}]}'
+
+    try {
+        if (token) {
+            def res = sh(
+                    script: "curl -X POST ${apiURL} -H 'Accept: application/vnd.tosslab.jandi-v2+json'\
+                     -H 'Content-Type: application/json' --data-raw '${body}'",
+                    returnStdout: true)
+        }
+    } catch (ignored) {
+    }
+}
+
 //-------------------------------------
 // PrismaCloud
 //-------------------------------------

@@ -723,8 +723,10 @@ def gradle_build(source_root = "") {
 
 def gradle_deploy(source_root = "") {
     source_root = get_source_root(source_root)
-    dir("${source_root}") {
-        sh "gradle task publish"
+    withCredentials([string(credentialsId: 'nexus', variable: 'nexus')]) {
+        dir("${source_root}") {
+            sh "gradle task publish"
+        }
     }
 }
 

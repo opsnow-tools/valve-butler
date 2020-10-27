@@ -768,7 +768,7 @@ def gradle_build(source_root = "") {
 
 def gradle_deploy(source_root = "") {
     source_root = get_source_root(source_root)
-    withCredentials([string(credentialsId: 'nexus', variable: 'nexus')]) {
+    withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'mavenUser', passwordVariable: 'mavenPassword')]) {
         dir("${source_root}") {
             sh "gradle task publish"
         }

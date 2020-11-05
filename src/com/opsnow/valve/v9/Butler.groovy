@@ -423,6 +423,10 @@ def push_docker(registry_type = "docker" /* (required) docker or harbor */, harb
 
 def helm_init() {
     sh """
+        export helmv=`helm version --short | head -c 2`
+        if [ ${helmv} != v3 ]; then
+        helm init —client-only
+        fi
         helm version
     """
 

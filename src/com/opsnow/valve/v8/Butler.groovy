@@ -373,13 +373,11 @@ def build_image(harborcredential = "HarborAdmin", dockerFile = "./Dockerfile", p
 }
 
 def helm_init() {
-    helmv = sh(script: "helm version --short | head -c 2", returnStdout: true).trim() 
-    sh """
-        if [ ${helmv} != v3 ]; then
-            helm init —client-only
-        fi
-        helm version
-    """
+    sh "helm version"
+    helmv = sh(script: "helm version --short | head -c 2", returnStdout: true).trim()
+    if (helmv != "v3") {
+        sh "helm init —client-only"
+    }
 
     if (chartmuseum) {
         sh "helm repo add chartmuseum https://${chartmuseum}"

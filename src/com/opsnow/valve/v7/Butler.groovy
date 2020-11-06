@@ -333,10 +333,10 @@ def build_image(dockerFile = "./Dockerfile", params=[]) {
 }
 
 def helm_init() {
+    helmv = sh(script: "helm version --short | head -c 2", returnStdout: true).trim() 
     sh """
-        export helmv=`helm version --short | head -c 2`
         if [ ${helmv} != v3 ]; then
-        helm init —client-only
+            helm init —client-only
         fi
         helm version
     """

@@ -373,8 +373,9 @@ def build_image(harborcredential = "HarborAdmin", dockerFile = "./Dockerfile", p
 }
 
 def helm_init() {
+    helmv = sh(script: "helm version --short | head -c 2", returnStdout: true).trim() 
     sh """
-        if [ `helm version --short | head -c 2` != v3 ]; then
+        if [ ${helmv} != v3 ]; then
             helm init —client-only
         fi
         helm version

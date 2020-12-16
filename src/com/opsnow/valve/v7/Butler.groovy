@@ -715,10 +715,20 @@ def npm_sonar(source_root = "", sonarqube = "") {
     }
 }
 
-def gradle_build(source_root = "") {
+def gradle_build(source_root = "", task_type = "", build_profile = "") {
+    source_root = get_source_root(source_root)
+    if (!task_type) {
+        task_type = "bootjar"
+    }
+    dir("${source_root}") {
+        sh "gradle task ${task_type} ${build_profile} -x test"
+    }
+}
+
+def gradle_test(source_root = "") {
     source_root = get_source_root(source_root)
     dir("${source_root}") {
-        sh "gradle task bootjar"
+        sh "gradle task test"
     }
 }
 
@@ -727,6 +737,27 @@ def gradle_deploy(source_root = "") {
     withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'mavenUser', passwordVariable: 'mavenPassword')]) {
         dir("${source_root}") {
             sh "gradle task publish"
+        }
+    }
+}
+
+def gradle_sonar(source_root = "", sonarqube = "") {
+    if (!sonarqube) {
+        if (!this.sonarqube) {
+            echo "gradle_sonar:sonarqube is null."
+            throw new RuntimeException("sonarqube is null.")
+        }
+        sonarqube = "https://${this.sonarqube}"
+    }
+    withCredentials([string(credentialsId: 'sonar-token', variable: 'sonar_token')]){
+        source_root = get_source_root(source_root)
+        dir("${source_root}") {
+            settings = get_m2_settings()
+            if (!sonar_token) {
+                sh "gradle sonarqube -Dsonar.host.url=${sonarqube} -x test"
+            } else {
+                sh "gradle sonarqube -Dsonar.host.url=${sonarqube} -Dsonar.login=${sonar_token} -x test"
+            }
         }
     }
 }

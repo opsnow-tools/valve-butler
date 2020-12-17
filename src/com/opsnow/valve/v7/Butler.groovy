@@ -280,13 +280,27 @@ def build_chart(path = "") {
 
     helm_init()
 
+    // helm plugin
+    count = sh(script: "helm plugin list | grep 'Push chart package' | wc -l", returnStdout: true).trim()
+    if ("${count}" == "0") {
+        sh """
+            helm plugin install https://github.com/chartmuseum/helm-push && \
+            helm plugin list
+        """
+    } else {
+        sh """
+            helm plugin update push && \
+            helm plugin list
+        """
+    }
+
     // helm push
     dir("${path}") {
-        chartfile = "/tmp/${name}-${version}.tgz"
-        repo_url = "http://chartmuseum:8080/api/charts?$force"
         sh "helm lint ."
-        sh "helm package . --destination /tmp --version ${version}"
-        sh "curl --data-binary \"@${chartfile}\" ${repo_url}"
+
+        if (chartmuseum) {
+            sh "helm push . chartmuseum"
+        }
     }
 
     // helm repo

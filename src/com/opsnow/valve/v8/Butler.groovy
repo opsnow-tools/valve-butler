@@ -314,7 +314,7 @@ def build_chart(path = "") {
     // helm push
     dir("${path}") {
         chartfile = "/tmp/${name}-${version}.tgz"
-        repo_url = "http://chartmuseum:8080/api/charts?$force"
+        repo_url = "http://chartmuseum:8080/api/charts?force"
         sh "helm lint ."
         sh "helm package . --destination /tmp --version ${version}"
         sh "curl --data-binary \"@${chartfile}\" ${repo_url}"

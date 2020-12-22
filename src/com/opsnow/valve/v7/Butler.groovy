@@ -322,7 +322,7 @@ def helm_init() {
     sh "helm version"
     helmv = sh(script: "helm version --short | head -c 2", returnStdout: true).trim()
     if (helmv != "v3") {
-        sh "helm init --client-only"
+        sh "helm init --client-only --skip-refresh"
     }
 
     if (chartmuseum) {
